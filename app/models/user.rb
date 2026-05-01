@@ -1,8 +1,12 @@
 class User < ApplicationRecord
+  include UuidPrimaryKey
+
   has_secure_password
 
+  has_many :roles, dependent: :destroy
+  has_many :skills, dependent: :destroy
+
   before_validation :normalize_email
-  before_create :assign_uuid
 
   validates :name, presence: true
   validates :email, presence: true,
@@ -15,10 +19,6 @@ class User < ApplicationRecord
   end
 
   private
-
-  def assign_uuid
-    self.id = SecureRandom.uuid if id.blank?
-  end
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence

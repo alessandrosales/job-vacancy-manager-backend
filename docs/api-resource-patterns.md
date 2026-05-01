@@ -152,7 +152,7 @@ The second command uses the formatter’s **dry-run** path to **regenerate** Ope
 5. **`spec/swagger_helper.rb`:** add schemas (`name`, `name_create_request`, `names_list`, …); for protected routes add `security [bearer_auth: []]` and `let(:Authorization) { "Bearer #{...}" }` in RSwag examples.
 6. **`spec/requests/api/v1/names_spec.rb`:** cover happy paths plus relevant `401` / `403` / `422` / `404` (plain `type: :request` examples are fine when one OpenAPI operation cannot express two different auth modes).
 7. Run **`rspec`** and **`rswag:specs:swaggerize`**.
-8. **Scope** all queries to `Current.user` (or equivalent) when the table has `user_id` (`db.mermaid`).
+8. **Scope** all queries to `current_user` / associations when the table has `user_id` (`db.mermaid`) — e.g. `current_user.roles.build` and `current_user.roles.find_by(id: ...)` so the client never sets `user_id` (see `RolesController`, `SkillsController`).
 
 ---
 
@@ -175,6 +175,8 @@ The second command uses the formatter’s **dry-run** path to **regenerate** Ope
 
 ## 9. References in this repo
 
+- Roles / skills (user-scoped): `app/controllers/api/v1/roles_controller.rb`, `app/controllers/api/v1/skills_controller.rb`
+- UUID PK concern: `app/models/concerns/uuid_primary_key.rb`
 - Users controller: `app/controllers/api/v1/users_controller.rb`
 - Authenticated base: `app/controllers/api/v1/authenticated_controller.rb`
 - API base (no JWT): `app/controllers/api/v1/base_controller.rb`

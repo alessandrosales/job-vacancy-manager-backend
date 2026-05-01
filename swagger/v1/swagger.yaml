@@ -26,6 +26,188 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/auth_login_request"
+  "/api/v1/roles":
+    get:
+      summary: Lists roles for the current user
+      tags:
+      - Roles
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/roles_list"
+    post:
+      summary: Creates role (scoped to current user)
+      tags:
+      - Roles
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/role"
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/role_create_request"
+  "/api/v1/roles/{id}":
+    parameters:
+    - name: id
+      in: path
+      format: uuid
+      description: Role UUID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Fetches role
+      tags:
+      - Roles
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/role"
+        '404':
+          description: not found
+    patch:
+      summary: Updates role
+      tags:
+      - Roles
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/role"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/role_update_request"
+    delete:
+      summary: Deletes role
+      tags:
+      - Roles
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: no content
+  "/api/v1/skills":
+    get:
+      summary: Lists skills for the current user
+      tags:
+      - Skills
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/skills_list"
+    post:
+      summary: Creates skill (scoped to current user)
+      tags:
+      - Skills
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/skill"
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/skill_create_request"
+  "/api/v1/skills/{id}":
+    parameters:
+    - name: id
+      in: path
+      format: uuid
+      description: Skill UUID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Fetches skill
+      tags:
+      - Skills
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/skill"
+        '404':
+          description: not found
+    patch:
+      summary: Updates skill
+      tags:
+      - Skills
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/skill"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/skill_update_request"
+    delete:
+      summary: Deletes skill
+      tags:
+      - Skills
+      security:
+      - bearer_auth: []
+      responses:
+        '204':
+          description: no content
   "/api/v1/users":
     get:
       summary: Lists the current user
@@ -239,6 +421,135 @@ components:
       required:
       - token
       - user
+    role:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        interest_level:
+          type: integer
+          minimum: 0
+          maximum: 5
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - name
+      - interest_level
+      - created_at
+      - updated_at
+    roles_list:
+      type: array
+      items:
+        "$ref": "#/components/schemas/role"
+    role_create_request:
+      type: object
+      properties:
+        role:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              nullable: true
+            interest_level:
+              type: integer
+              minimum: 0
+              maximum: 5
+          required:
+          - name
+      required:
+      - role
+    role_update_request:
+      type: object
+      properties:
+        role:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              nullable: true
+            interest_level:
+              type: integer
+              minimum: 0
+              maximum: 5
+      required:
+      - role
+    skill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - name
+      - created_at
+      - updated_at
+    skills_list:
+      type: array
+      items:
+        "$ref": "#/components/schemas/skill"
+    skill_create_request:
+      type: object
+      properties:
+        skill:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              nullable: true
+          required:
+          - name
+      required:
+      - skill
+    skill_update_request:
+      type: object
+      properties:
+        skill:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              nullable: true
+      required:
+      - skill
     validation_errors:
       type: object
       properties:

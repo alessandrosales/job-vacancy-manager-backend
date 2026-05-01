@@ -97,6 +97,95 @@ RSpec.configure do |config|
             },
             required: %w[token user]
           },
+          role: {
+            type: :object,
+            properties: {
+              id: { type: :string, format: :uuid },
+              user_id: { type: :string, format: :uuid },
+              name: { type: :string },
+              description: { type: :string, nullable: true },
+              interest_level: { type: :integer, minimum: 0, maximum: 5 },
+              created_at: { type: :string, format: "date-time" },
+              updated_at: { type: :string, format: "date-time" }
+            },
+            required: %w[id user_id name interest_level created_at updated_at]
+          },
+          roles_list: {
+            type: :array,
+            items: { "$ref" => "#/components/schemas/role" }
+          },
+          role_create_request: {
+            type: :object,
+            properties: {
+              role: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  description: { type: :string, nullable: true },
+                  interest_level: { type: :integer, minimum: 0, maximum: 5 }
+                },
+                required: %w[name]
+              }
+            },
+            required: %w[role]
+          },
+          role_update_request: {
+            type: :object,
+            properties: {
+              role: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  description: { type: :string, nullable: true },
+                  interest_level: { type: :integer, minimum: 0, maximum: 5 }
+                }
+              }
+            },
+            required: %w[role]
+          },
+          skill: {
+            type: :object,
+            properties: {
+              id: { type: :string, format: :uuid },
+              user_id: { type: :string, format: :uuid },
+              name: { type: :string },
+              description: { type: :string, nullable: true },
+              created_at: { type: :string, format: "date-time" },
+              updated_at: { type: :string, format: "date-time" }
+            },
+            required: %w[id user_id name created_at updated_at]
+          },
+          skills_list: {
+            type: :array,
+            items: { "$ref" => "#/components/schemas/skill" }
+          },
+          skill_create_request: {
+            type: :object,
+            properties: {
+              skill: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  description: { type: :string, nullable: true }
+                },
+                required: %w[name]
+              }
+            },
+            required: %w[skill]
+          },
+          skill_update_request: {
+            type: :object,
+            properties: {
+              skill: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  description: { type: :string, nullable: true }
+                }
+              }
+            },
+            required: %w[skill]
+          },
           validation_errors: {
             type: :object,
             properties: {
