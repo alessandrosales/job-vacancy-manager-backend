@@ -3,7 +3,7 @@
 require "swagger_helper"
 
 RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yaml" do
-  path "/api/v1/auth/recover_password" do
+  path "/api/v1/auth/recover-password" do
     post "Sends reset e-mail if account exists (always 204)" do
       tags "Auth"
       consumes "application/json"
@@ -37,10 +37,10 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
     end
   end
 
-  describe "POST /api/v1/auth/recover_password (no swagger)" do
+  describe "POST /api/v1/auth/recover-password (no swagger)" do
     it "returns 204 when JSON body is empty but Content-Type is application/json" do
       ActionMailer::Base.deliveries.clear
-      post "/api/v1/auth/recover_password",
+      post "/api/v1/auth/recover-password",
         params: "",
         headers: { "Content-Type" => "application/json" }
       expect(response).to have_http_status(:no_content)
@@ -48,7 +48,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
     end
 
     it "returns 400 JSON when body is not valid JSON" do
-      post "/api/v1/auth/recover_password",
+      post "/api/v1/auth/recover-password",
         params: "{not-json",
         headers: { "Content-Type" => "application/json" }
       expect(response).to have_http_status(:bad_request)
@@ -58,7 +58,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
 
     it "returns 204 and sends nothing when email is unknown" do
       ActionMailer::Base.deliveries.clear
-      post "/api/v1/auth/recover_password",
+      post "/api/v1/auth/recover-password",
         params: { auth: { email: "unknown-email@example.com" } }.to_json,
         headers: { "Content-Type" => "application/json" }
       expect(response).to have_http_status(:no_content)
@@ -66,7 +66,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
     end
   end
 
-  path "/api/v1/auth/change_password" do
+  path "/api/v1/auth/change-password" do
     post "Sets new password using reset token; returns JWT" do
       tags "Auth"
       consumes "application/json"
@@ -123,7 +123,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
     end
   end
 
-  describe "POST /api/v1/auth/change_password (no swagger)" do
+  describe "POST /api/v1/auth/change-password (no swagger)" do
     it "returns 422 when password is too short" do
       user = User.create!(
         name: "Short Pass User",
@@ -132,7 +132,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
         password_confirmation: "password12"
       )
       token = user.generate_token_for(:password_reset)
-      post "/api/v1/auth/change_password",
+      post "/api/v1/auth/change-password",
         params: {
           auth: {
             reset_token: token,

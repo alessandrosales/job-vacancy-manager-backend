@@ -3,7 +3,7 @@
 require "swagger_helper"
 
 RSpec.describe "API V1 — Reference links", openapi_spec: "v1/swagger.yaml" do
-  path "/api/v1/reference_links" do
+  path "/api/v1/reference-links" do
     get "Lists reference links for the current user" do
       tags "ReferenceLinks"
       produces "application/json"
@@ -82,7 +82,7 @@ RSpec.describe "API V1 — Reference links", openapi_spec: "v1/swagger.yaml" do
     end
   end
 
-  path "/api/v1/reference_links/{id}" do
+  path "/api/v1/reference-links/{id}" do
     parameter name: :id, in: :path, type: :string, format: :uuid, description: "Reference link UUID"
 
     get "Fetches reference link" do

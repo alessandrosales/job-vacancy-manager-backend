@@ -6,7 +6,7 @@ info:
   description: 'REST API under `/api/v1`. JSON keys use snake_case. Primary keys are
     UUIDs. Protected routes expect `Authorization: Bearer <jwt>`.'
 paths:
-  "/api/v1/auth/recover_password":
+  "/api/v1/auth/recover-password":
     post:
       summary: Sends reset e-mail if account exists (always 204)
       tags:
@@ -20,7 +20,7 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/auth_recover_password_request"
-  "/api/v1/auth/change_password":
+  "/api/v1/auth/change-password":
     post:
       summary: Sets new password using reset token; returns JWT
       tags:
@@ -361,7 +361,7 @@ paths:
       responses:
         '204':
           description: no content
-  "/api/v1/opportunity_statuses":
+  "/api/v1/opportunity-statuses":
     get:
       summary: Lists opportunity statuses for the current user
       tags:
@@ -400,7 +400,7 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/opportunity_status_create_request"
-  "/api/v1/opportunity_statuses/{id}":
+  "/api/v1/opportunity-statuses/{id}":
     parameters:
     - name: id
       in: path
@@ -454,7 +454,7 @@ paths:
           description: no content
         '422':
           description: cannot delete while opportunities reference this status
-  "/api/v1/reference_links":
+  "/api/v1/reference-links":
     get:
       summary: Lists reference links for the current user
       tags:
@@ -493,7 +493,7 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/reference_link_create_request"
-  "/api/v1/reference_links/{id}":
+  "/api/v1/reference-links/{id}":
     parameters:
     - name: id
       in: path
@@ -545,7 +545,7 @@ paths:
       responses:
         '204':
           description: no content
-  "/api/v1/resumes/{resume_id}/work_experiences":
+  "/api/v1/resumes/{resume_id}/work-experiences":
     parameters:
     - name: resume_id
       in: path
@@ -1037,7 +1037,7 @@ paths:
           description: no content
         '404':
           description: not found
-  "/api/v1/work_experiences/{work_experience_id}/skills":
+  "/api/v1/work-experiences/{work_experience_id}/skills":
     parameters:
     - name: work_experience_id
       in: path
@@ -1073,7 +1073,7 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/work_experience_skill_sync_request"
-  "/api/v1/work_experiences":
+  "/api/v1/work-experiences":
     get:
       summary: Lists work experiences for the current user
       tags:
@@ -1112,7 +1112,7 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/work_experience_create_request"
-  "/api/v1/work_experiences/{id}":
+  "/api/v1/work-experiences/{id}":
     parameters:
     - name: id
       in: path

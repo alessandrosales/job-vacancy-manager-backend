@@ -3,7 +3,7 @@
 require "swagger_helper"
 
 RSpec.describe "API V1 — Opportunity statuses", openapi_spec: "v1/swagger.yaml" do
-  path "/api/v1/opportunity_statuses" do
+  path "/api/v1/opportunity-statuses" do
     get "Lists opportunity statuses for the current user" do
       tags "Opportunity statuses"
       produces "application/json"
@@ -91,7 +91,7 @@ RSpec.describe "API V1 — Opportunity statuses", openapi_spec: "v1/swagger.yaml
     end
   end
 
-  path "/api/v1/opportunity_statuses/{id}" do
+  path "/api/v1/opportunity-statuses/{id}" do
     parameter name: :id, in: :path, type: :string, format: :uuid, description: "Opportunity status UUID"
 
     get "Fetches opportunity status" do

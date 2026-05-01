@@ -3,7 +3,7 @@
 require "swagger_helper"
 
 RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
-  path "/api/v1/work_experiences" do
+  path "/api/v1/work-experiences" do
     get "Lists work experiences for the current user" do
       tags "WorkExperiences"
       produces "application/json"
@@ -100,7 +100,7 @@ RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
     end
   end
 
-  path "/api/v1/work_experiences/{id}" do
+  path "/api/v1/work-experiences/{id}" do
     parameter name: :id, in: :path, type: :string, format: :uuid, description: "Work experience UUID"
 
     get "Fetches work experience" do

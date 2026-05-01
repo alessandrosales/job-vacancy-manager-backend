@@ -3,23 +3,23 @@ Rails.application.routes.draw do
     namespace :v1 do
       post "auth/login", to: "auth/sessions#create"
       post "auth/register", to: "auth/registrations#create"
-      post "auth/recover_password", to: "auth/passwords#recover"
-      post "auth/change_password", to: "auth/passwords#change"
+      post "auth/recover-password", to: "auth/passwords#recover"
+      post "auth/change-password", to: "auth/passwords#change"
       resources :users
       resources :roles
       resources :skills
-      resources :reference_links
+      resources :reference_links, path: "reference-links"
       resources :certifications
       resources :educations
-      resources :opportunity_statuses
+      resources :opportunity_statuses, path: "opportunity-statuses"
       resources :opportunities
       resources :resumes do
-        patch "work_experiences", to: "resume_work_experiences#update"
+        patch "work-experiences", to: "resume_work_experiences#update"
         patch "certifications", to: "resume_certifications#update"
         patch "educations", to: "resume_educations#update"
         patch "skills", to: "resume_skills#update"
       end
-      resources :work_experiences do
+      resources :work_experiences, path: "work-experiences" do
         patch "skills", to: "work_experience_skills#update"
       end
     end

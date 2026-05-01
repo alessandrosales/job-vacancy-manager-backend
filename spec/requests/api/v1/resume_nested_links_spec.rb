@@ -3,7 +3,7 @@
 require "swagger_helper"
 
 RSpec.describe "API V1 — Resume ↔ work experiences (sync)", openapi_spec: "v1/swagger.yaml" do
-  path "/api/v1/resumes/{resume_id}/work_experiences" do
+  path "/api/v1/resumes/{resume_id}/work-experiences" do
     parameter name: :resume_id, in: :path, type: :string, format: :uuid, description: "Resume UUID"
 
     patch "Syncs work experiences (full replacement)" do
