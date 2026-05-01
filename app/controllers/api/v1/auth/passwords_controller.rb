@@ -1,0 +1,51 @@
+# frozen_string_literal: true
+
+module Api
+  module V1
+    module Auth
+      class PasswordsController < BaseController
+        def recover
+          email = recover_params[:email].to_s.strip.downcase
+          user = User.find_by(email: email) if email.present?
+          if user
+            token = user.generate_token_for(:password_reset)
+            PasswordMailer.with(user: user, token: token).reset_instructions.deliver_now
+          end
+          head :no_content
+        end
+
+        def change
+          attrs = change_params
+          user = User.find_by_token_for(:password_reset, attrs[:reset_token].to_s)
+          if user.nil?
+            render json: {
+              errors: { reset_token: [ "invalid or expired token" ] }
+            }, status: :unprocessable_entity
+            return
+          end
+
+          user.password = attrs[:password]
+          user.password_confirmation = attrs[:password_confirmation]
+          if user.save
+            render json: {
+              token: User::JwtIssuer.encode(user),
+              user: user.as_api_json
+            }, status: :ok
+          else
+            render json: { errors: user.errors.as_json }, status: :unprocessable_entity
+          end
+        end
+
+        private
+
+        def recover_params
+          params.fetch(:auth, ActionController::Parameters.new).permit(:email)
+        end
+
+        def change_params
+          params.fetch(:auth, ActionController::Parameters.new).permit(:reset_token, :password, :password_confirmation)
+        end
+      end
+    end
+  end
+end

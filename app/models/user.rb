@@ -3,6 +3,10 @@ class User < ApplicationRecord
 
   has_secure_password
 
+  generates_token_for :password_reset, expires_in: 2.hours do
+    password_digest&.last(10)
+  end
+
   has_many :roles, dependent: :destroy
   has_many :skills, dependent: :destroy
   has_many :reference_links, dependent: :destroy

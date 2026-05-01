@@ -50,21 +50,20 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # Erros de entrega visíveis nos logs / monitoring (ver config/initializers/action_mailer_smtp.rb).
+  config.action_mailer.raise_delivery_errors =
+    ActiveModel::Type::Boolean.new.cast(ENV.fetch("MAILER_RAISE_DELIVERY_ERRORS", "true"))
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  smtp_cred = (Rails.application.credentials.dig(:smtp) || {}).with_indifferent_access
+  mailer_cred = (Rails.application.credentials.dig(:mailer) || {}).with_indifferent_access
+  smtp_configured = ENV["SMTP_ADDRESS"].present? || smtp_cred[:address].present?
+  config.action_mailer.perform_deliveries = smtp_configured
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Links em e-mails (ENV sobrescreve credentials.mailer).
+  config.action_mailer.default_url_options = {
+    host: ENV["MAILER_DEFAULT_URL_HOST"].presence || mailer_cred[:default_url_host].presence || "example.com",
+    protocol: ENV["MAILER_DEFAULT_URL_PROTOCOL"].presence || mailer_cred[:default_url_protocol].presence || "https"
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

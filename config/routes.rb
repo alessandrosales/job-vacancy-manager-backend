@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       post "auth/login", to: "auth/sessions#create"
+      post "auth/register", to: "auth/registrations#create"
+      post "auth/recover_password", to: "auth/passwords#recover"
+      post "auth/change_password", to: "auth/passwords#change"
       resources :users
       resources :roles
       resources :skills

@@ -97,6 +97,50 @@ RSpec.configure do |config|
             },
             required: %w[token user]
           },
+          auth_register_request: {
+            type: :object,
+            properties: {
+              auth: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  email: { type: :string, format: :email },
+                  password: { type: :string, minLength: 8, writeOnly: true },
+                  password_confirmation: { type: :string, minLength: 8, writeOnly: true }
+                },
+                required: %w[name email password password_confirmation]
+              }
+            },
+            required: %w[auth]
+          },
+          auth_recover_password_request: {
+            type: :object,
+            properties: {
+              auth: {
+                type: :object,
+                properties: {
+                  email: { type: :string, format: :email }
+                },
+                required: %w[email]
+              }
+            },
+            required: %w[auth]
+          },
+          auth_change_password_request: {
+            type: :object,
+            properties: {
+              auth: {
+                type: :object,
+                properties: {
+                  reset_token: { type: :string, description: "Token from password reset e-mail" },
+                  password: { type: :string, minLength: 8, writeOnly: true },
+                  password_confirmation: { type: :string, minLength: 8, writeOnly: true }
+                },
+                required: %w[reset_token password password_confirmation]
+              }
+            },
+            required: %w[auth]
+          },
           role: {
             type: :object,
             properties: {

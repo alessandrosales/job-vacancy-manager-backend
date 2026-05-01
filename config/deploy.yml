@@ -58,6 +58,15 @@ env:
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
 
+    # Action Mailer: preferir credentials (smtp / mailer) via rails credentials:edit — ver config/credentials/smtp.example.yml
+    # Ou injete ENV no deploy (sobrescreve credentials):
+    # MAILER_DEFAULT_URL_HOST: api.seudominio.com
+    # MAILER_DEFAULT_URL_PROTOCOL: https
+    # SMTP_ADDRESS: smtp.sendgrid.net
+    # SMTP_PORT: "587"
+    # SMTP_USER_NAME: apikey
+    # SMTP_PASSWORD: ...
+
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal logs -r job" will tail logs from the first server in the job section.
 aliases:

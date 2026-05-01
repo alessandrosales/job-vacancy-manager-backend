@@ -6,6 +6,68 @@ info:
   description: 'REST API under `/api/v1`. JSON keys use snake_case. Primary keys are
     UUIDs. Protected routes expect `Authorization: Bearer <jwt>`.'
 paths:
+  "/api/v1/auth/recover_password":
+    post:
+      summary: Sends reset e-mail if account exists (always 204)
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '204':
+          description: no content (same when email unknown — no enumeration)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/auth_recover_password_request"
+  "/api/v1/auth/change_password":
+    post:
+      summary: Sets new password using reset token; returns JWT
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/auth_login_response"
+        '422':
+          description: invalid token, expired token, or password validation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/auth_change_password_request"
+  "/api/v1/auth/register":
+    post:
+      summary: Creates account and returns JWT
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/auth_login_response"
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/auth_register_request"
   "/api/v1/auth/login":
     post:
       summary: Issues JWT
@@ -1214,6 +1276,68 @@ components:
       required:
       - token
       - user
+    auth_register_request:
+      type: object
+      properties:
+        auth:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              minLength: 8
+              writeOnly: true
+            password_confirmation:
+              type: string
+              minLength: 8
+              writeOnly: true
+          required:
+          - name
+          - email
+          - password
+          - password_confirmation
+      required:
+      - auth
+    auth_recover_password_request:
+      type: object
+      properties:
+        auth:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+          required:
+          - email
+      required:
+      - auth
+    auth_change_password_request:
+      type: object
+      properties:
+        auth:
+          type: object
+          properties:
+            reset_token:
+              type: string
+              description: Token from password reset e-mail
+            password:
+              type: string
+              minLength: 8
+              writeOnly: true
+            password_confirmation:
+              type: string
+              minLength: 8
+              writeOnly: true
+          required:
+          - reset_token
+          - password
+          - password_confirmation
+      required:
+      - auth
     role:
       type: object
       properties:

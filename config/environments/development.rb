@@ -29,14 +29,29 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
+  # Sem SMTP_ADDRESS: não falha a stack ao enviar; com SMTP (initializer), MAILER_RAISE_DELIVERY_ERRORS controla.
   config.action_mailer.raise_delivery_errors = false
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Links nos e-mails: ENV ou credentials (:mailer); fallback localhost.
+  mailer_cred = (Rails.application.credentials.dig(:mailer) || {}).with_indifferent_access
+  config.action_mailer.default_url_options = if ENV["MAILER_DEFAULT_URL_HOST"].present?
+    {
+      host: ENV.fetch("MAILER_DEFAULT_URL_HOST"),
+      protocol: ENV.fetch("MAILER_DEFAULT_URL_PROTOCOL", "http"),
+      port: ENV["MAILER_DEFAULT_URL_PORT"].presence&.to_i
+    }.compact
+  elsif mailer_cred[:default_url_host].present?
+    {
+      host: mailer_cred[:default_url_host],
+      protocol: mailer_cred[:default_url_protocol].presence || "http",
+      port: mailer_cred[:default_url_port].presence&.to_i
+    }.compact
+  else
+    { host: "localhost", port: 3000 }
+  end
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
