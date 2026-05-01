@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # SQLite: tipo uuid nativo não é dumpado em schema.rb (Rails 8.1).
 # PK string 36 chars + SecureRandom.uuid no model = contrato UUID estável na API.
 class CreateUsers < ActiveRecord::Migration[8.1]

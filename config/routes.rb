@@ -5,6 +5,20 @@ Rails.application.routes.draw do
       resources :users
       resources :roles
       resources :skills
+      resources :reference_links
+      resources :certifications
+      resources :educations
+      resources :opportunity_statuses
+      resources :opportunities
+      resources :resumes do
+        patch "work_experiences", to: "resume_work_experiences#update"
+        patch "certifications", to: "resume_certifications#update"
+        patch "educations", to: "resume_educations#update"
+        patch "skills", to: "resume_skills#update"
+      end
+      resources :work_experiences do
+        patch "skills", to: "work_experience_skills#update"
+      end
     end
   end
 

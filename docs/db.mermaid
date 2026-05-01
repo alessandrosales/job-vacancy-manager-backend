@@ -138,14 +138,6 @@ erDiagram
         datetime updated_at
     }
 
-    kanban_custom_columns {
-        uuid id PK
-        uuid user_id FK
-        string title
-        datetime created_at
-        datetime updated_at
-    }
-
     opportunities {
         uuid id PK
         uuid user_id FK
@@ -153,9 +145,8 @@ erDiagram
         uuid role_id FK
         text description %% default null
         string url %% default null
-        uuid status FK "mesmo papel que Opportunity.status no front (id do status)"
+        uuid status_id FK "FK opportunity_statuses.id; no front equivale ao id do status da oportunidade"
         int interest_level "0..5" %% default 0
-        uuid board_column_id FK "nullable; senão coluna derivada do status"
         decimal hourly_rate "nullable" %% default null
         decimal annual_salary "nullable" %% default null
         datetime created_at
@@ -165,8 +156,7 @@ erDiagram
     companies ||--o{ opportunities : "company_id"
     roles ||--o{ opportunities : "role_id"
     roles ||--o{ resumes : "role_id"
-    opportunity_statuses ||--o{ opportunities : "status = id (uuid FK)"
-    kanban_custom_columns ||--o{ opportunities : "board_column_id (nullable)"
+    opportunity_statuses ||--o{ opportunities : "status_id → opportunity_statuses.id (FK no banco)"
 
     work_experiences }o--o{ skills : "work_experience_skills"
     resumes }o--o{ work_experiences : "resume_work_experiences"
@@ -188,8 +178,4 @@ erDiagram
     users ||--o{ resume_educations : "user_id"
     users ||--o{ resume_skills : "user_id"
     users ||--o{ opportunity_statuses : "user_id"
-    users ||--o{ kanban_custom_columns : "user_id"
     users ||--o{ opportunities : "user_id"
-
-    %% kanban_column_order (array de ids no layout): no Rails pode ser JSON versionado,
-    %% tabela de posições (polimórfica status vs custom) ou coluna em settings por usuário — não modelado como tabela única aqui.

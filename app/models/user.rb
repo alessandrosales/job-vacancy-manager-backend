@@ -5,6 +5,14 @@ class User < ApplicationRecord
 
   has_many :roles, dependent: :destroy
   has_many :skills, dependent: :destroy
+  has_many :reference_links, dependent: :destroy
+  has_many :work_experiences, dependent: :destroy
+  has_many :certifications, dependent: :destroy
+  has_many :educations, dependent: :destroy
+  has_many :companies, dependent: :destroy
+  has_many :opportunity_statuses, dependent: :destroy
+  has_many :opportunities, dependent: :destroy
+  has_many :resumes, dependent: :destroy
 
   before_validation :normalize_email
 

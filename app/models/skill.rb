@@ -5,6 +5,11 @@ class Skill < ApplicationRecord
 
   belongs_to :user
 
+  has_many :work_experience_skills, dependent: :destroy
+  has_many :work_experiences, through: :work_experience_skills
+  has_many :resume_skills, dependent: :destroy
+  has_many :resumes, through: :resume_skills
+
   validates :name, presence: true
 
   def as_api_json

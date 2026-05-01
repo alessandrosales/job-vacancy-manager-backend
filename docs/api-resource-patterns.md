@@ -175,7 +175,8 @@ The second command uses the formatter’s **dry-run** path to **regenerate** Ope
 
 ## 9. References in this repo
 
-- Roles / skills (user-scoped): `app/controllers/api/v1/roles_controller.rb`, `app/controllers/api/v1/skills_controller.rb`
+- Roles / skills / reference links / work experiences / certifications / educations / opportunity statuses / opportunities / resumes (user-scoped): `roles_controller.rb`, `skills_controller.rb`, `reference_links_controller.rb`, `work_experiences_controller.rb`, `certifications_controller.rb`, `educations_controller.rb`, `opportunity_statuses_controller.rb`, `opportunities_controller.rb`, `resumes_controller.rb`
+- Vínculos N:N (substituição completa via **`PATCH`** + array de IDs; `[]` remove todos): `work_experience_skills_controller.rb`, `resume_work_experiences_controller.rb`, `resume_certifications_controller.rb`, `resume_educations_controller.rb`, `resume_skills_controller.rb`
 - UUID PK concern: `app/models/concerns/uuid_primary_key.rb`
 - Users controller: `app/controllers/api/v1/users_controller.rb`
 - Authenticated base: `app/controllers/api/v1/authenticated_controller.rb`
@@ -185,7 +186,7 @@ The second command uses the formatter’s **dry-run** path to **regenerate** Ope
 - Request context: `app/models/current.rb`
 - JWT encoding: `app/models/user/jwt_issuer.rb`
 - Model: `app/models/user.rb`
-- Migration: `db/migrate/20260501220840_create_users.rb`
+- Migration: `db/migrate/20260202120000_create_users.rb`
 - Request specs: `spec/requests/api/v1/users_spec.rb`, `spec/requests/api/v1/auth_sessions_spec.rb`
 - OpenAPI base config: `spec/swagger_helper.rb`
 - CORS: `config/initializers/cors.rb`
