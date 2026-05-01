@@ -11,16 +11,23 @@ RSpec.configure do |config|
       info: {
         title: "Job Vacancy Manager API",
         version: "1.0.0",
-        description: "API REST versionada em `/api/v1`. Chaves primárias e estrangeiras em UUID."
+        description: "REST API under `/api/v1`. JSON keys use snake_case. Primary keys are UUIDs. Protected routes expect `Authorization: Bearer <jwt>`."
       },
       paths: {},
       servers: [
         {
           url: "http://localhost:3000",
-          description: "Desenvolvimento"
+          description: "Development"
         }
       ],
       components: {
+        securitySchemes: {
+          bearer_auth: {
+            type: :http,
+            scheme: :bearer,
+            bearerFormat: "JWT"
+          }
+        },
         schemas: {
           user: {
             type: :object,
@@ -67,6 +74,28 @@ RSpec.configure do |config|
               }
             },
             required: %w[user]
+          },
+          auth_login_request: {
+            type: :object,
+            properties: {
+              auth: {
+                type: :object,
+                properties: {
+                  email: { type: :string, format: :email },
+                  password: { type: :string, writeOnly: true }
+                },
+                required: %w[email password]
+              }
+            },
+            required: %w[auth]
+          },
+          auth_login_response: {
+            type: :object,
+            properties: {
+              token: { type: :string, description: "HS256 JWT" },
+              user: { "$ref" => "#/components/schemas/user" }
+            },
+            required: %w[token user]
           },
           validation_errors: {
             type: :object,

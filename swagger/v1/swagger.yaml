@@ -3,14 +3,36 @@ openapi: 3.0.1
 info:
   title: Job Vacancy Manager API
   version: 1.0.0
-  description: API REST versionada em `/api/v1`. Chaves primárias e estrangeiras em
-    UUID.
+  description: 'REST API under `/api/v1`. JSON keys use snake_case. Primary keys are
+    UUIDs. Protected routes expect `Authorization: Bearer <jwt>`.'
 paths:
+  "/api/v1/auth/login":
+    post:
+      summary: Issues JWT
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/auth_login_response"
+        '401':
+          description: invalid credentials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/auth_login_request"
   "/api/v1/users":
     get:
-      summary: Lista usuários
+      summary: Lists the current user
       tags:
       - Users
+      security:
+      - bearer_auth: []
       responses:
         '200':
           description: OK
@@ -18,20 +40,22 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/users_list"
+        '401':
+          description: missing or invalid JWT
     post:
-      summary: Cadastra usuário
+      summary: Registers user (public)
       tags:
       - Users
       parameters: []
       responses:
         '201':
-          description: criado
+          description: created
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/user"
         '422':
-          description: erros de validação
+          description: validation errors
           content:
             application/json:
               schema:
@@ -46,61 +70,72 @@ paths:
     - name: id
       in: path
       format: uuid
-      description: UUID do usuário
+      description: User UUID
       required: true
       schema:
         type: string
     get:
-      summary: Busca usuário por id
+      summary: Fetches user by id
       tags:
       - Users
+      security:
+      - bearer_auth: []
       responses:
         '200':
-          description: encontrado
+          description: found
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/user"
         '404':
-          description: não encontrado
+          description: not found
     patch:
-      summary: Atualiza usuário
+      summary: Updates user
       tags:
       - Users
+      security:
+      - bearer_auth: []
       parameters: []
       responses:
         '200':
-          description: atualizado
+          description: updated
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/user"
         '422':
-          description: erros de validação
+          description: validation errors
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/validation_errors"
         '404':
-          description: não encontrado
+          description: not found
       requestBody:
         content:
           application/json:
             schema:
               "$ref": "#/components/schemas/user_update_request"
     delete:
-      summary: Remove usuário
+      summary: Deletes user
       tags:
       - Users
+      security:
+      - bearer_auth: []
       responses:
         '204':
-          description: sem conteúdo
+          description: no content
         '404':
-          description: não encontrado
+          description: not found
 servers:
 - url: http://localhost:3000
-  description: Desenvolvimento
+  description: Development
 components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     user:
       type: object
@@ -175,6 +210,34 @@ components:
               minLength: 8
               writeOnly: true
       required:
+      - user
+    auth_login_request:
+      type: object
+      properties:
+        auth:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              writeOnly: true
+          required:
+          - email
+          - password
+      required:
+      - auth
+    auth_login_response:
+      type: object
+      properties:
+        token:
+          type: string
+          description: HS256 JWT
+        user:
+          "$ref": "#/components/schemas/user"
+      required:
+      - token
       - user
     validation_errors:
       type: object

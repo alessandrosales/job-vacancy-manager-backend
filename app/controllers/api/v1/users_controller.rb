@@ -1,10 +1,12 @@
 module Api
   module V1
-    class UsersController < BaseController
-      before_action :set_user, only: %i[show update destroy]
+    class UsersController < AuthenticatedController
+      skip_before_action :authenticate_request!, only: :create
+
+      before_action :set_user, only: %i[ show update destroy ]
 
       def index
-        render json: User.order(created_at: :desc).map(&:as_api_json)
+        render json: [ current_user.as_api_json ]
       end
 
       def show
@@ -36,7 +38,9 @@ module Api
       private
 
       def set_user
-        @user = User.find(params[:id])
+        @user = User.find_by(id: params[:id])
+        head(:not_found) && return if @user.blank?
+        head(:forbidden) && return unless @user.id == current_user.id
       end
 
       def user_params

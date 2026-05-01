@@ -4,14 +4,15 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/users" do
-    get "Lista usuários" do
+    get "Lists the current user" do
       tags "Users"
       produces "application/json"
+      security [bearer_auth: []]
 
       response 200, "OK" do
         schema "$ref" => "#/components/schemas/users_list"
 
-        before do
+        let!(:lister) do
           User.create!(
             name: "Lister",
             email: "lister@example.com",
@@ -19,22 +20,31 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
             password_confirmation: "password12"
           )
         end
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(lister)}" }
 
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data).to be_an(Array)
+          expect(data.size).to eq(1)
           expect(data.first["email"]).to eq("lister@example.com")
+          expect(data.first["id"]).to eq(lister.id)
         end
+      end
+
+      response 401, "missing or invalid JWT" do
+        let(:Authorization) { "Bearer invalid.token.here" }
+
+        run_test!
       end
     end
 
-    post "Cadastra usuário" do
+    post "Registers user (public)" do
       tags "Users"
       consumes "application/json"
       produces "application/json"
       parameter name: :body, in: :body, schema: { "$ref" => "#/components/schemas/user_create_request" }
 
-      response 201, "criado" do
+      response 201, "created" do
         schema "$ref" => "#/components/schemas/user"
 
         let(:body) do
@@ -55,7 +65,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
         end
       end
 
-      response 422, "erros de validação" do
+      response 422, "validation errors" do
         schema "$ref" => "#/components/schemas/validation_errors"
 
         let(:body) do
@@ -75,13 +85,14 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
   end
 
   path "/api/v1/users/{id}" do
-    parameter name: :id, in: :path, type: :string, format: :uuid, description: "UUID do usuário"
+    parameter name: :id, in: :path, type: :string, format: :uuid, description: "User UUID"
 
-    get "Busca usuário por id" do
+    get "Fetches user by id" do
       tags "Users"
       produces "application/json"
+      security [bearer_auth: []]
 
-      response 200, "encontrado" do
+      response 200, "found" do
         schema "$ref" => "#/components/schemas/user"
 
         let(:existing) do
@@ -93,6 +104,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:id) { existing.id }
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -100,20 +112,30 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
         end
       end
 
-      response 404, "não encontrado" do
+      response 404, "not found" do
+        let(:existing) do
+          User.create!(
+            name: "Grace Hopper",
+            email: "grace404@example.com",
+            password: "password12",
+            password_confirmation: "password12"
+          )
+        end
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:id) { SecureRandom.uuid }
 
         run_test!
       end
     end
 
-    patch "Atualiza usuário" do
+    patch "Updates user" do
       tags "Users"
       consumes "application/json"
       produces "application/json"
+      security [bearer_auth: []]
       parameter name: :body, in: :body, schema: { "$ref" => "#/components/schemas/user_update_request" }
 
-      response 200, "atualizado" do
+      response 200, "updated" do
         schema "$ref" => "#/components/schemas/user"
 
         let(:existing) do
@@ -125,6 +147,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:id) { existing.id }
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:body) { { user: { name: "Alan M. Turing" } } }
 
         run_test! do |response|
@@ -133,7 +156,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
         end
       end
 
-      response 422, "erros de validação" do
+      response 422, "validation errors" do
         schema "$ref" => "#/components/schemas/validation_errors"
 
         let(:existing) do
@@ -145,12 +168,22 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:id) { existing.id }
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:body) { { user: { email: "invalid-email" } } }
 
         run_test!
       end
 
-      response 404, "não encontrado" do
+      response 404, "not found" do
+        let(:existing) do
+          User.create!(
+            name: "Keep404",
+            email: "keep404@example.com",
+            password: "password12",
+            password_confirmation: "password12"
+          )
+        end
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:id) { SecureRandom.uuid }
         let(:body) { { user: { name: "X" } } }
 
@@ -158,10 +191,11 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
       end
     end
 
-    delete "Remove usuário" do
+    delete "Deletes user" do
       tags "Users"
+      security [bearer_auth: []]
 
-      response 204, "sem conteúdo" do
+      response 204, "no content" do
         let!(:existing) do
           User.create!(
             name: "To Delete",
@@ -171,17 +205,51 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:id) { existing.id }
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
 
         run_test! do
           expect(User.find_by(id: existing.id)).to be_nil
         end
       end
 
-      response 404, "não encontrado" do
+      response 404, "not found" do
+        let(:existing) do
+          User.create!(
+            name: "Del404",
+            email: "del404@example.com",
+            password: "password12",
+            password_confirmation: "password12"
+          )
+        end
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:id) { SecureRandom.uuid }
 
         run_test!
       end
     end
+  end
+end
+
+RSpec.describe "API V1 — Users authorization (request)", type: :request do
+  it "returns 401 for GET /api/v1/users without Authorization" do
+    get api_v1_users_path
+    expect(response).to have_http_status(:unauthorized)
+  end
+
+  it "returns 403 when fetching another user's record" do
+    alice = User.create!(
+      name: "Alice",
+      email: "alice@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    bob = User.create!(
+      name: "Bob",
+      email: "bob@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    get api_v1_user_path(bob), headers: { "Authorization" => "Bearer #{User::JwtIssuer.encode(alice)}" }
+    expect(response).to have_http_status(:forbidden)
   end
 end
