@@ -1,0 +1,195 @@
+%% Mapeamento a partir de job-vacancy-manager-layout/docs/rails-integration/
+%% (05-entidades-e-casos-especiais.md, 03-dados-e-backend.md) e
+%% app/components/providers/app-data-provider.tsx — convenção Rails: tabelas pluralizadas, colunas snake_case.
+%% Escopo: todo registro de domínio pertence ao usuário autenticado (multi-tenant por user_id).
+
+erDiagram
+    users {
+        uuid id PK
+        string name
+        string email
+        string password_digest
+        string token %% default null
+        datetime created_at
+        datetime updated_at
+    }
+
+    companies {
+        uuid id PK
+        uuid user_id FK
+        string name
+        string url %% default null
+        text description %% default null
+        int interest_level "0..5" %% default 0
+        datetime created_at
+        datetime updated_at
+    }
+
+    roles {
+        uuid id PK
+        uuid user_id FK
+        string name
+        text description %% default null
+        int interest_level "0..5" %% default 0
+        datetime created_at
+        datetime updated_at
+    }
+
+    skills {
+        uuid id PK
+        uuid user_id FK
+        string name
+        text description %% default null
+        datetime created_at
+        datetime updated_at
+    }
+
+    reference_links {
+        uuid id PK
+        uuid user_id FK
+        string title
+        string url
+        datetime created_at
+        datetime updated_at
+    }
+
+    work_experiences {
+        uuid id PK
+        uuid user_id FK
+        string title
+        string company_name
+        boolean is_remote %% default false
+        date date_from
+        date date_to %% default null
+        datetime created_at
+        datetime updated_at
+    }
+
+    work_experience_skills {
+        uuid user_id FK
+        uuid work_experience_id FK
+        uuid skill_id FK
+    }
+
+    certifications {
+        uuid id PK
+        uuid user_id FK
+        string name
+        date date_from
+        date date_to
+        datetime created_at
+        datetime updated_at
+    }
+
+    educations {
+        uuid id PK
+        uuid user_id FK
+        string institution_name
+        string degree
+        string field_of_study
+        date date_from
+        date date_to
+        datetime created_at
+        datetime updated_at
+    }
+
+    resumes {
+        uuid id PK
+        uuid user_id FK
+        string title
+        text description %% default null
+        uuid role_id FK
+        datetime updated_at "última atualização lógica do doc"
+        datetime created_at
+    }
+
+    resume_work_experiences {
+        uuid user_id FK
+        uuid resume_id FK
+        uuid work_experience_id FK
+    }
+
+    resume_certifications {
+        uuid user_id FK
+        uuid resume_id FK
+        uuid certification_id FK
+    }
+
+    resume_educations {
+        uuid user_id FK
+        uuid resume_id FK
+        uuid education_id FK
+    }
+
+    resume_skills {
+        uuid user_id FK
+        uuid resume_id FK
+        uuid skill_id FK
+    }
+
+    opportunity_statuses {
+        uuid id PK
+        uuid user_id FK
+        string label
+        text description %% default null
+        string variant "badge: secondary|outline|default|destructive"
+        int position "opcional: ordem padrão no Kanban"
+        datetime created_at
+        datetime updated_at
+    }
+
+    kanban_custom_columns {
+        uuid id PK
+        uuid user_id FK
+        string title
+        datetime created_at
+        datetime updated_at
+    }
+
+    opportunities {
+        uuid id PK
+        uuid user_id FK
+        uuid company_id FK
+        uuid role_id FK
+        text description %% default null
+        string url %% default null
+        uuid status FK "mesmo papel que Opportunity.status no front (id do status)"
+        int interest_level "0..5" %% default 0
+        uuid board_column_id FK "nullable; senão coluna derivada do status"
+        decimal hourly_rate "nullable" %% default null
+        decimal annual_salary "nullable" %% default null
+        datetime created_at
+        datetime updated_at
+    }
+
+    companies ||--o{ opportunities : "company_id"
+    roles ||--o{ opportunities : "role_id"
+    roles ||--o{ resumes : "role_id"
+    opportunity_statuses ||--o{ opportunities : "status = id (uuid FK)"
+    kanban_custom_columns ||--o{ opportunities : "board_column_id (nullable)"
+
+    work_experiences }o--o{ skills : "work_experience_skills"
+    resumes }o--o{ work_experiences : "resume_work_experiences"
+    resumes }o--o{ certifications : "resume_certifications"
+    resumes }o--o{ educations : "resume_educations"
+    resumes }o--o{ skills : "resume_skills"
+
+    users ||--o{ companies : "user_id"
+    users ||--o{ roles : "user_id"
+    users ||--o{ skills : "user_id"
+    users ||--o{ reference_links : "user_id"
+    users ||--o{ work_experiences : "user_id"
+    users ||--o{ work_experience_skills : "user_id"
+    users ||--o{ certifications : "user_id"
+    users ||--o{ educations : "user_id"
+    users ||--o{ resumes : "user_id"
+    users ||--o{ resume_work_experiences : "user_id"
+    users ||--o{ resume_certifications : "user_id"
+    users ||--o{ resume_educations : "user_id"
+    users ||--o{ resume_skills : "user_id"
+    users ||--o{ opportunity_statuses : "user_id"
+    users ||--o{ kanban_custom_columns : "user_id"
+    users ||--o{ opportunities : "user_id"
+
+    %% kanban_column_order (array de ids no layout): no Rails pode ser JSON versionado,
+    %% tabela de posições (polimórfica status vs custom) ou coluna em settings por usuário — não modelado como tabela única aqui.
