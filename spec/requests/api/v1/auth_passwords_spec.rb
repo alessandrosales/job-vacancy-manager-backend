@@ -29,7 +29,12 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
           mail = ActionMailer::Base.deliveries.last
           expect(mail.to).to eq([ "recover-auth@example.com" ])
           raw = mail.text_part&.decoded || mail.body.raw_source
-          token = raw.scan(/[A-Za-z0-9_=-]{24,}/).max_by(&:length)
+          link = raw.match(%r{(https?://[^\s]+)})
+          expect(link).to be_present
+          parsed = URI.parse(link[1])
+          expect(parsed.path).to end_with("/reset-password")
+          params = URI.decode_www_form(parsed.query.to_s).to_h
+          token = params["reset_token"]
           expect(token).to be_present
           expect(User.find_by_token_for(:password_reset, token)).to eq(user)
         end
@@ -97,11 +102,19 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
           }
         end
 
+        before { ActionMailer::Base.deliveries.clear }
+
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data["token"]).to be_present
           user.reload
           expect(user.authenticate("newpass123")).to eq(user)
+          expect(ActionMailer::Base.deliveries.size).to eq(1)
+          notice = ActionMailer::Base.deliveries.last
+          expect(notice.to).to eq([ "change-auth@example.com" ])
+          expect(notice.subject).to eq("Your password was changed — Job Vacancy Manager")
+          body_text = notice.text_part&.decoded || notice.body.raw_source
+          expect(body_text).to include("password for your Job Vacancy Manager account")
         end
       end
 
@@ -118,13 +131,18 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
           }
         end
 
-        run_test!
+        before { ActionMailer::Base.deliveries.clear }
+
+        run_test! do
+          expect(ActionMailer::Base.deliveries).to be_empty
+        end
       end
     end
   end
 
   describe "POST /api/v1/auth/change-password (no swagger)" do
     it "returns 422 when password is too short" do
+      ActionMailer::Base.deliveries.clear
       user = User.create!(
         name: "Short Pass User",
         email: "short-pass@example.com",
@@ -144,6 +162,7 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
       expect(response).to have_http_status(:unprocessable_entity)
       data = JSON.parse(response.body)
       expect(data["errors"]).to be_present
+      expect(ActionMailer::Base.deliveries).to be_empty
     end
   end
 end

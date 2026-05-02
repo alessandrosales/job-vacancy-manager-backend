@@ -150,9 +150,12 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(existing)}" }
         let(:body) { { user: { name: "Alan M. Turing" } } }
 
+        before { ActionMailer::Base.deliveries.clear }
+
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data["name"]).to eq("Alan M. Turing")
+          expect(ActionMailer::Base.deliveries).to be_empty
         end
       end
 
@@ -251,5 +254,49 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
     )
     get api_v1_user_path(bob), headers: { "Authorization" => "Bearer #{User::JwtIssuer.encode(alice)}" }
     expect(response).to have_http_status(:forbidden)
+  end
+
+  it "does not send password-changed e-mail when patch omits password" do
+    ActionMailer::Base.deliveries.clear
+    user = User.create!(
+      name: "No Mail",
+      email: "no-mail-pass@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    patch api_v1_user_path(user),
+      params: { user: { name: "No Mail Jr" } }.to_json,
+      headers: {
+        "Content-Type" => "application/json",
+        "Authorization" => "Bearer #{User::JwtIssuer.encode(user)}"
+      }
+    expect(response).to have_http_status(:ok)
+    expect(ActionMailer::Base.deliveries).to be_empty
+  end
+
+  it "sends password-changed e-mail when password is updated via PATCH" do
+    ActionMailer::Base.deliveries.clear
+    user = User.create!(
+      name: "Pwd Mail",
+      email: "pwd-mail@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    patch api_v1_user_path(user),
+      params: {
+        user: {
+          password: "newpassword12",
+          password_confirmation: "newpassword12"
+        }
+      }.to_json,
+      headers: {
+        "Content-Type" => "application/json",
+        "Authorization" => "Bearer #{User::JwtIssuer.encode(user)}"
+      }
+    expect(response).to have_http_status(:ok)
+    expect(ActionMailer::Base.deliveries.size).to eq(1)
+    mail = ActionMailer::Base.deliveries.last
+    expect(mail.to).to eq([ "pwd-mail@example.com" ])
+    expect(mail.subject).to eq("Your password was changed — Job Vacancy Manager")
   end
 end

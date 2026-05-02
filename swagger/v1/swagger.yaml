@@ -9,6 +9,9 @@ paths:
   "/api/v1/auth/recover-password":
     post:
       summary: Sends reset e-mail if account exists (always 204)
+      description: When the account exists, sends an e-mail with a link to the SPA
+        (`{frontend_url}/reset-password?reset_token=...`). Set `frontend_url` in Rails
+        credentials or `FRONTEND_URL`.
       tags:
       - Auth
       parameters: []
@@ -23,6 +26,7 @@ paths:
   "/api/v1/auth/change-password":
     post:
       summary: Sets new password using reset token; returns JWT
+      description: On success, sends a confirmation e-mail to the account address.
       tags:
       - Auth
       parameters: []

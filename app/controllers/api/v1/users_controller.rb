@@ -24,6 +24,9 @@ module Api
 
       def update
         if @user.update(user_update_params)
+          if @user.previous_changes.key?("password_digest")
+            PasswordMailer.with(user: @user).password_changed.deliver_now
+          end
           render json: @user.as_api_json
         else
           render json: { errors: @user.errors.as_json }, status: :unprocessable_entity

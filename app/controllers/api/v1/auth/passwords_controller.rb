@@ -27,6 +27,7 @@ module Api
           user.password = attrs[:password]
           user.password_confirmation = attrs[:password_confirmation]
           if user.save
+            PasswordMailer.with(user: user).password_changed.deliver_now
             render json: {
               token: User::JwtIssuer.encode(user),
               user: user.as_api_json
