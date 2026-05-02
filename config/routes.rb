@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       resources :certifications
       resources :educations
       resources :opportunity_statuses, path: "opportunity-statuses"
+      get "dashboard", to: "dashboard#show"
       resources :opportunities
       resources :resumes do
         patch "work-experiences", to: "resume_work_experiences#update"
