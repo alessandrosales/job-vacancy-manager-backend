@@ -6,7 +6,7 @@ module Api
       before_action :set_opportunity, only: %i[show update destroy]
 
       def index
-        render_paginated(current_user.opportunities.order(created_at: :desc))
+        render_paginated(current_user.opportunities.order(updated_at: :desc))
       end
 
       def show
