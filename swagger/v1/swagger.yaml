@@ -88,6 +88,22 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/auth_login_request"
+  "/api/v1/auth/me":
+    get:
+      summary: Returns the authenticated user
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/user"
+        '401':
+          description: missing or invalid JWT
   "/api/v1/certifications":
     get:
       summary: Lists certifications for the current user
