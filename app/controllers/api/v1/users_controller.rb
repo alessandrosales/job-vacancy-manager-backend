@@ -6,7 +6,7 @@ module Api
       before_action :set_user, only: %i[ show update destroy ]
 
       def index
-        render json: [ current_user.as_api_json ]
+        render_paginated(User.where(id: current_user.id))
       end
 
       def show

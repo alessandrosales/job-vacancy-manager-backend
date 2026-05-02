@@ -4,13 +4,19 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Opportunities", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/opportunities" do
-    get "Lists opportunities for the current user" do
+    get "Lists opportunities for the current user (paginated by default)" do
       tags "Opportunities"
       produces "application/json"
       security [ bearer_auth: [] ]
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
+        description: "Page number (default 1)."
+      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
+        description: "Items per page (default 25, max 100)."
+      parameter name: :paginated, in: :query, required: false, schema: { type: :string },
+        description: "Send `false`/`0`/`no` to receive the legacy bare array response."
 
       response 200, "OK" do
-        schema "$ref" => "#/components/schemas/opportunities_list"
+        schema "$ref" => "#/components/schemas/paginated_opportunities"
 
         let!(:owner) do
           User.create!(
@@ -24,6 +30,9 @@ RSpec.describe "API V1 — Opportunities", openapi_spec: "v1/swagger.yaml" do
         let(:company) { owner.companies.create!(name: "Acme") }
         let(:role) { owner.roles.create!(name: "Staff") }
         let(:status) { owner.opportunity_statuses.create!(label: "New", variant: "secondary") }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         before do
           owner.opportunities.create!(
@@ -36,10 +45,11 @@ RSpec.describe "API V1 — Opportunities", openapi_spec: "v1/swagger.yaml" do
         end
 
         run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data.size).to eq(1)
-          expect(data.first["description"]).to eq("Nice gig")
-          expect(data.first["company_id"]).to eq(company.id)
+          payload = JSON.parse(response.body)
+          expect(payload).to include("data", "meta")
+          expect(payload["data"].size).to eq(1)
+          expect(payload["data"].first["description"]).to eq("Nice gig")
+          expect(payload["data"].first["company_id"]).to eq(company.id)
         end
       end
     end
@@ -226,6 +236,30 @@ RSpec.describe "API V1 — Opportunities", openapi_spec: "v1/swagger.yaml" do
         run_test! do
           expect(Opportunity.find_by(id: opportunity.id)).to be_nil
         end
+      end
+    end
+  end
+end
+
+RSpec.describe "API V1 — Opportunities pagination", type: :request do
+  it_behaves_like "paginated index", path: "/api/v1/opportunities" do
+    let!(:owner) do
+      User.create!(
+        name: "Pag", email: "op-pag@example.com",
+        password: "password12", password_confirmation: "password12"
+      )
+    end
+    let(:authorization_header) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+    let(:expected_total) { 3 }
+
+    before do
+      company = owner.companies.create!(name: "PagCo")
+      role = owner.roles.create!(name: "PagRole", interest_level: 1)
+      status = owner.opportunity_statuses.create!(label: "PagSt", variant: "secondary")
+      3.times do
+        owner.opportunities.create!(
+          company: company, role: role, opportunity_status: status, interest_level: 1
+        )
       end
     end
   end

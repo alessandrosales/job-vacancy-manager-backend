@@ -69,9 +69,45 @@ Then `show` / `update` / `destroy` do not repeat `rescue` in every resource.
 - **`Current.user`:** set in `Api::V1::Authenticatable` after a valid Bearer token; cleared with `Current.reset` after each request.
 - **`users#index`:** returns only the authenticated user (`[current_user.as_api_json]`); `show` / `update` / `destroy` require `id` to match `current_user.id` (`403` if another user’s id is known).
 
-### 3.6 Still worth planning for other resources
+### 3.6 Pagination on `index` (default behavior)
 
-- **Pagination and filters** on `index` (`page`, `cursor`) before large lists go to the client.
+All `index` actions in `Api::V1` are paginated by default through the `Api::V1::Paginatable` concern (included in `AuthenticatedController`). Use `render_paginated(scope)` instead of `render json: scope.map(&:as_api_json)`:
+
+```ruby
+def index
+  render_paginated(current_user.opportunities.order(created_at: :desc))
+end
+```
+
+**Response shape (default):**
+
+```json
+{
+  "data": [ { ... }, { ... } ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 25,
+    "total_pages": 4,
+    "total_count": 87
+  }
+}
+```
+
+**Query parameters:**
+
+| Param | Default | Notes |
+|-------|---------|-------|
+| `page` | `1` | Coerced to `>= 1`; invalid values fall back to `1`. |
+| `per_page` | `25` | Capped at `100`; invalid values fall back to `25`. |
+| `paginated` | `true` | Send `false` / `0` / `no` to opt out and receive the legacy bare array (`[ {...}, ... ]`, no envelope). |
+
+**OpenAPI:** add a `paginated_<resource>` envelope schema in `spec/swagger_helper.rb` and reference it from the `index` response (`schema "$ref" => "#/components/schemas/paginated_<resource>"`). Always document the three query params on the `get` block.
+
+**Specs:** include `it_behaves_like "paginated index", path: "/api/v1/<resource>"` (defined in `spec/support/shared_examples/paginated_index.rb`) to cover envelope shape, `?paginated=false` opt-out, `per_page` cap, and `page`/`per_page` navigation.
+
+### 3.7 Still worth planning for other resources
+
+- **Filters** on `index` (search, date ranges) once the SPA needs them.
 - **Nested routes** (`/api/v1/users/:user_id/companies`) only when the UX and authorization model are truly nested.
 - **Refresh tokens / revocation** — optional use of `users.token` or a separate table; today access tokens are stateless until expiry.
 
@@ -182,6 +218,8 @@ The second command uses the formatter’s **dry-run** path to **regenerate** Ope
 - Authenticated base: `app/controllers/api/v1/authenticated_controller.rb`
 - API base (no JWT): `app/controllers/api/v1/base_controller.rb`
 - JWT concern: `app/controllers/concerns/api/v1/authenticatable.rb`
+- Pagination concern: `app/controllers/concerns/api/v1/paginatable.rb`
+- Pagination shared examples: `spec/support/shared_examples/paginated_index.rb`
 - Login: `app/controllers/api/v1/auth/sessions_controller.rb`
 - Request context: `app/models/current.rb`
 - JWT encoding: `app/models/user/jwt_issuer.rb`

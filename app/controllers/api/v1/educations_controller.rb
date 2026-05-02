@@ -6,7 +6,7 @@ module Api
       before_action :set_education, only: %i[show update destroy]
 
       def index
-        render json: current_user.educations.order(created_at: :desc).map(&:as_api_json)
+        render_paginated(current_user.educations.order(created_at: :desc))
       end
 
       def show

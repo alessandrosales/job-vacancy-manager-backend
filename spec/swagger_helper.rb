@@ -681,6 +681,96 @@ RSpec.configure do |config|
             type: :array,
             items: { "$ref" => "#/components/schemas/skill" }
           },
+          pagination_meta: {
+            type: :object,
+            properties: {
+              current_page: { type: :integer, minimum: 1 },
+              per_page: { type: :integer, minimum: 1 },
+              total_pages: { type: :integer, minimum: 0 },
+              total_count: { type: :integer, minimum: 0 }
+            },
+            required: %w[current_page per_page total_pages total_count]
+          },
+          paginated_users: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/user" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_roles: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/role" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_skills: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/skill" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_reference_links: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/reference_link" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_work_experiences: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/work_experience" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_certifications: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/certification" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_educations: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/education" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_opportunity_statuses: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/opportunity_status" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_opportunities: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/opportunity" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
+          paginated_resumes: {
+            type: :object,
+            properties: {
+              data: { type: :array, items: { "$ref" => "#/components/schemas/resume" } },
+              meta: { "$ref" => "#/components/schemas/pagination_meta" }
+            },
+            required: %w[data meta]
+          },
           validation_errors: {
             type: :object,
             properties: {

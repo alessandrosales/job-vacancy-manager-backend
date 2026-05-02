@@ -4,13 +4,19 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/users" do
-    get "Lists the current user" do
+    get "Lists the current user (paginated by default)" do
       tags "Users"
       produces "application/json"
       security [bearer_auth: []]
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
+        description: "Page number (default 1)."
+      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
+        description: "Items per page (default 25, max 100)."
+      parameter name: :paginated, in: :query, required: false, schema: { type: :string },
+        description: "Send `false`/`0`/`no` to receive the legacy bare array response."
 
       response 200, "OK" do
-        schema "$ref" => "#/components/schemas/users_list"
+        schema "$ref" => "#/components/schemas/paginated_users"
 
         let!(:lister) do
           User.create!(
@@ -21,18 +27,31 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(lister)}" }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data).to be_an(Array)
-          expect(data.size).to eq(1)
-          expect(data.first["email"]).to eq("lister@example.com")
-          expect(data.first["id"]).to eq(lister.id)
+          payload = JSON.parse(response.body)
+          expect(payload).to include("data", "meta")
+          expect(payload["data"]).to be_an(Array)
+          expect(payload["data"].size).to eq(1)
+          expect(payload["data"].first["email"]).to eq("lister@example.com")
+          expect(payload["data"].first["id"]).to eq(lister.id)
+          expect(payload["meta"]).to include(
+            "current_page" => 1,
+            "per_page" => 25,
+            "total_pages" => 1,
+            "total_count" => 1
+          )
         end
       end
 
       response 401, "missing or invalid JWT" do
         let(:Authorization) { "Bearer invalid.token.here" }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         run_test!
       end
@@ -230,6 +249,21 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
         run_test!
       end
     end
+  end
+end
+
+RSpec.describe "API V1 — Users pagination", type: :request do
+  it_behaves_like "paginated index", path: "/api/v1/users" do
+    let!(:owner) do
+      User.create!(
+        name: "Pag Owner",
+        email: "users-pag@example.com",
+        password: "password12",
+        password_confirmation: "password12"
+      )
+    end
+    let(:authorization_header) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+    let(:expected_total) { 1 }
   end
 end
 

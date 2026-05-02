@@ -4,13 +4,19 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/work-experiences" do
-    get "Lists work experiences for the current user" do
+    get "Lists work experiences for the current user (paginated by default)" do
       tags "WorkExperiences"
       produces "application/json"
       security [ bearer_auth: [] ]
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
+        description: "Page number (default 1)."
+      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
+        description: "Items per page (default 25, max 100)."
+      parameter name: :paginated, in: :query, required: false, schema: { type: :string },
+        description: "Send `false`/`0`/`no` to receive the legacy bare array response."
 
       response 200, "OK" do
-        schema "$ref" => "#/components/schemas/work_experiences_list"
+        schema "$ref" => "#/components/schemas/paginated_work_experiences"
 
         let!(:owner) do
           User.create!(
@@ -21,6 +27,9 @@ RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         before do
           owner.work_experiences.create!(
@@ -33,11 +42,12 @@ RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
         end
 
         run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data.size).to eq(1)
-          expect(data.first["company_name"]).to eq("Acme")
-          expect(data.first["user_id"]).to eq(owner.id)
-          expect(data.first["is_remote"]).to be true
+          payload = JSON.parse(response.body)
+          expect(payload).to include("data", "meta")
+          expect(payload["data"].size).to eq(1)
+          expect(payload["data"].first["company_name"]).to eq("Acme")
+          expect(payload["data"].first["user_id"]).to eq(owner.id)
+          expect(payload["data"].first["is_remote"]).to be true
         end
       end
     end
@@ -199,6 +209,25 @@ RSpec.describe "API V1 — Work experiences", openapi_spec: "v1/swagger.yaml" do
         run_test! do
           expect(WorkExperience.find_by(id: work_experience.id)).to be_nil
         end
+      end
+    end
+  end
+end
+
+RSpec.describe "API V1 — Work experiences pagination", type: :request do
+  it_behaves_like "paginated index", path: "/api/v1/work-experiences" do
+    let!(:owner) do
+      User.create!(
+        name: "Pag", email: "workexp-pag@example.com",
+        password: "password12", password_confirmation: "password12"
+      )
+    end
+    let(:authorization_header) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+    let(:expected_total) { 3 }
+
+    before do
+      3.times do |i|
+        owner.work_experiences.create!(title: "T#{i}", company_name: "C#{i}", is_remote: false)
       end
     end
   end

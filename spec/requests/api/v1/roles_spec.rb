@@ -4,13 +4,19 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Roles", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/roles" do
-    get "Lists roles for the current user" do
+    get "Lists roles for the current user (paginated by default)" do
       tags "Roles"
       produces "application/json"
       security [ bearer_auth: [] ]
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
+        description: "Page number (default 1)."
+      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
+        description: "Items per page (default 25, max 100)."
+      parameter name: :paginated, in: :query, required: false, schema: { type: :string },
+        description: "Send `false`/`0`/`no` to receive the legacy bare array response."
 
       response 200, "OK" do
-        schema "$ref" => "#/components/schemas/roles_list"
+        schema "$ref" => "#/components/schemas/paginated_roles"
 
         let!(:owner) do
           User.create!(
@@ -21,16 +27,21 @@ RSpec.describe "API V1 — Roles", openapi_spec: "v1/swagger.yaml" do
           )
         end
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         before do
           owner.roles.create!(name: "Backend", description: "Ruby", interest_level: 5)
         end
 
         run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data.size).to eq(1)
-          expect(data.first["name"]).to eq("Backend")
-          expect(data.first["user_id"]).to eq(owner.id)
+          payload = JSON.parse(response.body)
+          expect(payload).to include("data", "meta")
+          expect(payload["data"].size).to eq(1)
+          expect(payload["data"].first["name"]).to eq("Backend")
+          expect(payload["data"].first["user_id"]).to eq(owner.id)
+          expect(payload["meta"]).to include("current_page" => 1, "per_page" => 25, "total_count" => 1)
         end
       end
     end
@@ -174,6 +185,23 @@ RSpec.describe "API V1 — Roles", openapi_spec: "v1/swagger.yaml" do
           expect(Role.find_by(id: role.id)).to be_nil
         end
       end
+    end
+  end
+end
+
+RSpec.describe "API V1 — Roles pagination", type: :request do
+  it_behaves_like "paginated index", path: "/api/v1/roles" do
+    let!(:owner) do
+      User.create!(
+        name: "Pag", email: "roles-pag@example.com",
+        password: "password12", password_confirmation: "password12"
+      )
+    end
+    let(:authorization_header) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+    let(:expected_total) { 3 }
+
+    before do
+      3.times { |i| owner.roles.create!(name: "R#{i}", interest_level: 1) }
     end
   end
 end

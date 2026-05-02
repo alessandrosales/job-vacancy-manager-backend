@@ -4,13 +4,19 @@ require "swagger_helper"
 
 RSpec.describe "API V1 — Opportunity statuses", openapi_spec: "v1/swagger.yaml" do
   path "/api/v1/opportunity-statuses" do
-    get "Lists opportunity statuses for the current user" do
+    get "Lists opportunity statuses for the current user (paginated by default)" do
       tags "Opportunity statuses"
       produces "application/json"
       security [ bearer_auth: [] ]
+      parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
+        description: "Page number (default 1)."
+      parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
+        description: "Items per page (default 25, max 100)."
+      parameter name: :paginated, in: :query, required: false, schema: { type: :string },
+        description: "Send `false`/`0`/`no` to receive the legacy bare array response."
 
       response 200, "OK" do
-        schema "$ref" => "#/components/schemas/opportunity_statuses_list"
+        schema "$ref" => "#/components/schemas/paginated_opportunity_statuses"
 
         let!(:owner) do
           User.create!(
@@ -21,16 +27,20 @@ RSpec.describe "API V1 — Opportunity statuses", openapi_spec: "v1/swagger.yaml
           )
         end
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+        let(:page) { nil }
+        let(:per_page) { nil }
+        let(:paginated) { nil }
 
         before do
           owner.opportunity_statuses.create!(label: "Applied", variant: "secondary", position: 1)
         end
 
         run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data.size).to eq(1)
-          expect(data.first["label"]).to eq("Applied")
-          expect(data.first["variant"]).to eq("secondary")
+          payload = JSON.parse(response.body)
+          expect(payload).to include("data", "meta")
+          expect(payload["data"].size).to eq(1)
+          expect(payload["data"].first["label"]).to eq("Applied")
+          expect(payload["data"].first["variant"]).to eq("secondary")
         end
       end
     end
@@ -211,6 +221,23 @@ RSpec.describe "API V1 — Opportunity statuses", openapi_spec: "v1/swagger.yaml
 
         run_test!
       end
+    end
+  end
+end
+
+RSpec.describe "API V1 — Opportunity statuses pagination", type: :request do
+  it_behaves_like "paginated index", path: "/api/v1/opportunity-statuses" do
+    let!(:owner) do
+      User.create!(
+        name: "Pag", email: "os-pag@example.com",
+        password: "password12", password_confirmation: "password12"
+      )
+    end
+    let(:authorization_header) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+    let(:expected_total) { 3 }
+
+    before do
+      3.times { |i| owner.opportunity_statuses.create!(label: "L#{i}", variant: "secondary", position: i) }
     end
   end
 end

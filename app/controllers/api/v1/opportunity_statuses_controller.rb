@@ -6,7 +6,7 @@ module Api
       before_action :set_opportunity_status, only: %i[show update destroy]
 
       def index
-        render json: current_user.opportunity_statuses.order(position: :asc, created_at: :asc).map(&:as_api_json)
+        render_paginated(current_user.opportunity_statuses.order(position: :asc, created_at: :asc))
       end
 
       def show

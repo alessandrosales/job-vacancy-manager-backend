@@ -6,7 +6,7 @@ module Api
       before_action :set_work_experience, only: %i[ show update destroy ]
 
       def index
-        render json: current_user.work_experiences.order(created_at: :desc).map(&:as_api_json)
+        render_paginated(current_user.work_experiences.order(created_at: :desc))
       end
 
       def show

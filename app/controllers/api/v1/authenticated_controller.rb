@@ -4,6 +4,7 @@ module Api
   module V1
     class AuthenticatedController < BaseController
       include Authenticatable
+      include Paginatable
     end
   end
 end
