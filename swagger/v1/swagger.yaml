@@ -2339,6 +2339,26 @@ components:
         updated_at:
           type: string
           format: date-time
+        work_experience_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        certification_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        education_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        skill_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
       required:
       - id
       - user_id
@@ -2346,6 +2366,10 @@ components:
       - title
       - created_at
       - updated_at
+      - work_experience_ids
+      - certification_ids
+      - education_ids
+      - skill_ids
     resumes_list:
       type: array
       items:

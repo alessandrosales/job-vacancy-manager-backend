@@ -3,10 +3,19 @@
 module Api
   module V1
     class ResumesController < AuthenticatedController
+      RESUME_JSON_INCLUDES = %i[
+        resume_work_experiences
+        resume_certifications
+        resume_educations
+        resume_skills
+      ].freeze
+
       before_action :set_resume, only: %i[show update destroy]
 
       def index
-        render_paginated(current_user.resumes.order(created_at: :desc))
+        render_paginated(
+          current_user.resumes.includes(RESUME_JSON_INCLUDES).order(created_at: :desc)
+        )
       end
 
       def show
@@ -38,7 +47,7 @@ module Api
       private
 
       def set_resume
-        @resume = current_user.resumes.find_by(id: params[:id])
+        @resume = current_user.resumes.includes(RESUME_JSON_INCLUDES).find_by(id: params[:id])
         head(:not_found) && return if @resume.blank?
       end
 

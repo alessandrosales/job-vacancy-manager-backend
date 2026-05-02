@@ -19,7 +19,12 @@ class Resume < ApplicationRecord
   validate :role_owned_by_user
 
   def as_api_json
-    as_json(only: %i[id user_id role_id title description created_at updated_at])
+    as_json(only: %i[id user_id role_id title description created_at updated_at]).merge(
+      "work_experience_ids" => sorted_join_foreign_ids(:resume_work_experiences, :work_experience_id),
+      "certification_ids" => sorted_join_foreign_ids(:resume_certifications, :certification_id),
+      "education_ids" => sorted_join_foreign_ids(:resume_educations, :education_id),
+      "skill_ids" => sorted_join_foreign_ids(:resume_skills, :skill_id)
+    )
   end
 
   def sync_work_experience_links!(user, ids_raw)
@@ -39,6 +44,12 @@ class Resume < ApplicationRecord
   end
 
   private
+
+  def sorted_join_foreign_ids(join_assoc, fk_column)
+    send(join_assoc).sort_by do |row|
+      [ row.created_at, row.public_send(fk_column).to_s ]
+    end.map { |row| row.public_send(fk_column) }
+  end
 
   def replace_resume_joins(join_assoc, fk_column, user, ids_raw, owned_scope)
     ids = normalize_sync_id_list(ids_raw)

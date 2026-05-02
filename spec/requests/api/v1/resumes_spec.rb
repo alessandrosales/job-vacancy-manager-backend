@@ -223,3 +223,28 @@ RSpec.describe "API V1 — Resumes isolation", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 end
+
+RSpec.describe "API V1 — Resumes association ids", type: :request do
+  it "returns work_experience_ids in sync order on GET show" do
+    owner = User.create!(
+      name: "Rv Links",
+      email: "resume-links@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    role = owner.roles.create!(name: "Dev", interest_level: 3)
+    resume = owner.resumes.create!(title: "Linked", role: role)
+    we_second = owner.work_experiences.create!(title: "Second", company_name: "Co", is_remote: false)
+    we_first = owner.work_experiences.create!(title: "First", company_name: "Co", is_remote: false)
+    resume.sync_work_experience_links!(owner, [ we_second.id, we_first.id ])
+
+    get api_v1_resume_path(resume), headers: { "Authorization" => "Bearer #{User::JwtIssuer.encode(owner)}" }
+
+    expect(response).to have_http_status(:ok)
+    body = JSON.parse(response.body)
+    expect(body["work_experience_ids"]).to eq([ we_second.id, we_first.id ])
+    expect(body["certification_ids"]).to eq([])
+    expect(body["education_ids"]).to eq([])
+    expect(body["skill_ids"]).to eq([])
+  end
+end
