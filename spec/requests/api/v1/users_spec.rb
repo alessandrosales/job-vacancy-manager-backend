@@ -333,4 +333,38 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
     expect(mail.to).to eq([ "pwd-mail@example.com" ])
     expect(mail.subject).to eq("Your password was changed — Job Vacancy Manager")
   end
+
+  it "persists optional profile fields on PATCH" do
+    user = User.create!(
+      name: "Profile User",
+      email: "profile-fields@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    patch api_v1_user_path(user),
+      params: {
+        user: {
+          phone: "+55 11 99999-9999",
+          avatar_url: "https://example.com/a.png",
+          bio: "Backend dev",
+          age: 32,
+          full_address: "Rua 1, 10 — São Paulo",
+          relationship_status: "single",
+          gender: "female"
+        }
+      }.to_json,
+      headers: {
+        "Content-Type" => "application/json",
+        "Authorization" => "Bearer #{User::JwtIssuer.encode(user)}"
+      }
+    expect(response).to have_http_status(:ok)
+    data = JSON.parse(response.body)
+    expect(data["phone"]).to eq("+55 11 99999-9999")
+    expect(data["avatar_url"]).to eq("https://example.com/a.png")
+    expect(data["bio"]).to eq("Backend dev")
+    expect(data["age"]).to eq(32)
+    expect(data["full_address"]).to eq("Rua 1, 10 — São Paulo")
+    expect(data["relationship_status"]).to eq("single")
+    expect(data["gender"]).to eq("female")
+  end
 end

@@ -17,7 +17,10 @@ class WorkExperience < ApplicationRecord
   validates :is_remote, inclusion: { in: [ true, false ] }
 
   def as_api_json
-    as_json(only: %i[id user_id title company_name is_remote date_from date_to created_at updated_at])
+    ids = work_experience_skills.order(created_at: :asc).pluck(:skill_id)
+    as_json(only: %i[id user_id title company_name is_remote date_from date_to created_at updated_at]).merge(
+      "skill_ids" => ids
+    )
   end
 
   # Replaces all skill links. +skill_ids_raw+ may be empty (clear links). Every id must belong to +user+.

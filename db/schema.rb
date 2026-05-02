@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_02_120011) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_02_120012) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"
@@ -149,10 +149,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_120011) do
   end
 
   create_table "users", id: { type: :string, limit: 36 }, force: :cascade do |t|
+    t.integer "age"
+    t.string "avatar_url"
+    t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.text "full_address"
+    t.string "gender"
     t.string "name", null: false
     t.string "password_digest", null: false
+    t.string "phone"
+    t.string "relationship_status"
     t.string "token"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true

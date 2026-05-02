@@ -1421,6 +1421,29 @@ components:
         email:
           type: string
           format: email
+        phone:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        age:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 150
+        full_address:
+          type: string
+          nullable: true
+        relationship_status:
+          type: string
+          nullable: true
+        gender:
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
@@ -1456,6 +1479,29 @@ components:
               type: string
               minLength: 8
               writeOnly: true
+            phone:
+              type: string
+              nullable: true
+            avatar_url:
+              type: string
+              nullable: true
+            bio:
+              type: string
+              nullable: true
+            age:
+              type: integer
+              nullable: true
+              minimum: 0
+              maximum: 150
+            full_address:
+              type: string
+              nullable: true
+            relationship_status:
+              type: string
+              nullable: true
+            gender:
+              type: string
+              nullable: true
           required:
           - name
           - email
@@ -1482,6 +1528,29 @@ components:
               type: string
               minLength: 8
               writeOnly: true
+            phone:
+              type: string
+              nullable: true
+            avatar_url:
+              type: string
+              nullable: true
+            bio:
+              type: string
+              nullable: true
+            age:
+              type: integer
+              nullable: true
+              minimum: 0
+              maximum: 150
+            full_address:
+              type: string
+              nullable: true
+            relationship_status:
+              type: string
+              nullable: true
+            gender:
+              type: string
+              nullable: true
       required:
       - user
     auth_login_request:

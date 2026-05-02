@@ -35,6 +35,13 @@ RSpec.configure do |config|
               id: { type: :string, format: :uuid },
               name: { type: :string },
               email: { type: :string, format: :email },
+              phone: { type: :string, nullable: true },
+              avatar_url: { type: :string, nullable: true },
+              bio: { type: :string, nullable: true },
+              age: { type: :integer, nullable: true, minimum: 0, maximum: 150 },
+              full_address: { type: :string, nullable: true },
+              relationship_status: { type: :string, nullable: true },
+              gender: { type: :string, nullable: true },
               created_at: { type: :string, format: "date-time" },
               updated_at: { type: :string, format: "date-time" }
             },
@@ -53,7 +60,14 @@ RSpec.configure do |config|
                   name: { type: :string },
                   email: { type: :string, format: :email },
                   password: { type: :string, minLength: 8, writeOnly: true },
-                  password_confirmation: { type: :string, minLength: 8, writeOnly: true }
+                  password_confirmation: { type: :string, minLength: 8, writeOnly: true },
+                  phone: { type: :string, nullable: true },
+                  avatar_url: { type: :string, nullable: true },
+                  bio: { type: :string, nullable: true },
+                  age: { type: :integer, nullable: true, minimum: 0, maximum: 150 },
+                  full_address: { type: :string, nullable: true },
+                  relationship_status: { type: :string, nullable: true },
+                  gender: { type: :string, nullable: true }
                 },
                 required: %w[name email password password_confirmation]
               }
@@ -69,7 +83,14 @@ RSpec.configure do |config|
                   name: { type: :string },
                   email: { type: :string, format: :email },
                   password: { type: :string, minLength: 8, writeOnly: true },
-                  password_confirmation: { type: :string, minLength: 8, writeOnly: true }
+                  password_confirmation: { type: :string, minLength: 8, writeOnly: true },
+                  phone: { type: :string, nullable: true },
+                  avatar_url: { type: :string, nullable: true },
+                  bio: { type: :string, nullable: true },
+                  age: { type: :integer, nullable: true, minimum: 0, maximum: 150 },
+                  full_address: { type: :string, nullable: true },
+                  relationship_status: { type: :string, nullable: true },
+                  gender: { type: :string, nullable: true }
                 }
               }
             },
