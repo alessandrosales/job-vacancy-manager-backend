@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       post "auth/change-password", to: "auth/passwords#change"
       resources :users
       resources :roles
+      resources :companies
       resources :skills
       resources :reference_links, path: "reference-links"
       resources :certifications
