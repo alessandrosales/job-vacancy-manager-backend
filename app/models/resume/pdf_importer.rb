@@ -8,7 +8,7 @@ class Resume::PdfImporter
     Use ISO date format YYYY-MM-DD for all dates; use empty strings for unknown dates.
     For booleans, infer is_remote only when the document clearly states remote, home office, or distributed work.
     Deduplicate skills and roles by name (case-insensitive). Extract languages only when the CV lists languages or proficiency (map to beginner, intermediate, advanced, or native; use intermediate when unclear).
-    For each job, include description with responsibilities and achievements from that role; include company_url and company_description only when explicitly on the CV; use empty strings when absent. The role description is used to populate the user's company record for that employer. Create one employer entry per distinct company_name (same employer across roles should repeat the same name).
+    For each job, include description with responsibilities and achievements from that role; list skills under each job's skills array for tools or technologies named in that role's bullets (deduplicated per job). Include company_url and company_description only when explicitly on the CV; use empty strings when absent. The role description is used to populate the user's company record for that employer. Create one employer entry per distinct company_name (same employer across roles should repeat the same name).
     Extract reference_links for every visible LinkedIn, GitHub, GitLab, portfolio, or other http(s) link in headers, contact, or footer; use full https URLs; deduplicate by URL.
     The importer never creates duplicate user-owned rows: if work experience, education, certification, skill, role, language, company, or reference link already exists for the account (same identifying fields), it is reused and not overwritten.
     If no clear resume title exists, use the most prominent job title or a short professional label.
@@ -76,12 +76,18 @@ class Resume::PdfImporter
       ActiveRecord::Base.transaction do
         preexisting_company_ids = user.companies.pluck(:id).to_set
 
-        work_experience_ids = Array(payload["work_experiences"]).filter_map do |row|
-          create_work_experience!(user, row, preexisting_company_ids: preexisting_company_ids)
+        we_rows = Array(payload["work_experiences"]).filter_map do |row|
+          persist_work_experience_row!(user, row, preexisting_company_ids: preexisting_company_ids)
         end
+        work_experience_ids = we_rows.map(&:first)
+        we_skill_ids = we_rows.flat_map(&:last)
+
         education_ids = Array(payload["educations"]).filter_map { |row| create_education!(user, row) }
         certification_ids = Array(payload["certifications"]).filter_map { |row| create_certification!(user, row) }
-        skill_ids = Array(payload["skills"]).filter_map { |row| find_or_create_skill!(user, row) }
+        skill_ids = (
+          Array(payload["skills"]).filter_map { |row| find_or_create_skill!(user, row) } +
+          we_skill_ids
+        ).uniq
         Array(payload["roles"]).each { |row| find_or_create_role!(user, row) }
         Array(payload["languages"]).each { |row| find_or_create_language!(user, row) }
         Array(payload["reference_links"]).each { |row| find_or_create_reference_link!(user, row) }
@@ -105,22 +111,57 @@ class Resume::PdfImporter
       end
     end
 
-    def create_work_experience!(user, row, preexisting_company_ids:)
+    def persist_work_experience_row!(user, row, preexisting_company_ids:)
       row = row.to_h.stringify_keys
       return nil if row["title"].blank? || row["company_name"].blank?
 
+      skill_ids = skill_ids_from_work_experience_skill_rows(user, row)
+
       existing_we = find_existing_work_experience(user, row)
-      return existing_we.id if existing_we
+      if existing_we
+        import_skills_for_work_experience!(user, existing_we, skill_ids)
+        return [ existing_we.id, skill_ids ]
+      end
 
       upsert_company_from_experience_row!(user, row, preexisting_company_ids: preexisting_company_ids)
 
-      user.work_experiences.create!(
+      we = user.work_experiences.create!(
         title: row["title"].to_s.strip,
         company_name: row["company_name"].to_s.strip,
         is_remote: cast_bool(row["is_remote"]),
         date_from: parse_date(row["date_from"]),
         date_to: parse_date(row["date_to"])
-      ).id
+      )
+      import_skills_for_work_experience!(user, we, skill_ids)
+      [ we.id, skill_ids ]
+    end
+
+    def skill_ids_from_work_experience_skill_rows(user, row)
+      row = row.to_h.stringify_keys
+      Array(row["skills"]).filter_map do |entry|
+        find_or_create_skill!(user, normalize_inline_skill_row(entry))
+      end
+    end
+
+    def normalize_inline_skill_row(entry)
+      case entry
+      when Hash
+        entry.to_h.stringify_keys
+      else
+        { "name" => entry.to_s, "description" => "" }
+      end
+    end
+
+    def import_skills_for_work_experience!(user, work_experience, skill_ids)
+      new_ids = Array(skill_ids).map(&:presence).compact.uniq
+      return if new_ids.empty?
+
+      combined = (work_experience.skill_ids + new_ids).uniq
+      return if combined.sort == work_experience.skill_ids.sort
+
+      unless work_experience.sync_skill_links!(user, combined)
+        raise Error, "Failed to link skills to work experience."
+      end
     end
 
     def find_existing_work_experience(user, row)

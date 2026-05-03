@@ -23,6 +23,10 @@ RSpec.describe Resume::PdfImporter do
           "company_url" => "https://acme.example",
           "company_description" => "B2B SaaS",
           "description" => "Built APIs and mentored juniors.",
+          "skills" => [
+            { "name" => "Go", "description" => "API services" },
+            { "name" => "Docker", "description" => "" }
+          ],
           "is_remote" => true,
           "date_from" => "2020-01-01",
           "date_to" => ""
@@ -33,6 +37,9 @@ RSpec.describe Resume::PdfImporter do
           "company_url" => "",
           "company_description" => "",
           "description" => "Owned CI/CD migration.",
+          "skills" => [
+            { "name" => "Ruby", "description" => "from role" }
+          ],
           "is_remote" => false,
           "date_from" => "2018-01-01",
           "date_to" => "2019-12-31"
@@ -78,7 +85,7 @@ RSpec.describe Resume::PdfImporter do
         .and change(WorkExperience, :count).by(2)
         .and change(Education, :count).by(1)
         .and change(Certification, :count).by(1)
-        .and change(Skill, :count).by(1)
+        .and change(Skill, :count).by(3)
         .and change(Role, :count).by(1)
         .and change(Language, :count).by(2)
         .and change(Company, :count).by(1)
@@ -91,8 +98,13 @@ RSpec.describe Resume::PdfImporter do
       expect(resume.work_experience_ids.size).to eq(2)
       expect(resume.education_ids.size).to eq(1)
       expect(resume.certification_ids.size).to eq(1)
-      expect(resume.skill_ids.size).to eq(1)
-      expect(user.skills.pluck(:name)).to eq([ "Ruby" ])
+      expect(resume.skill_ids.size).to eq(3)
+      expect(user.skills.order(:name).pluck(:name)).to eq([ "Docker", "Go", "Ruby" ])
+
+      dev_we, lead_we = user.work_experiences.order(date_from: :desc).to_a
+      expect(dev_we.title).to eq("Developer")
+      expect(dev_we.skill_ids.size).to eq(2)
+      expect(lead_we.skill_ids).to eq([ user.skills.find_by!("name" => "Ruby").id ])
       expect(user.roles.order(:created_at).last.name).to eq("Staff Engineer")
       expect(user.languages.order(:name).pluck(:name, :level)).to contain_exactly(
         [ "English", "native" ],

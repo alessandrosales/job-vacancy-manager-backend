@@ -22,6 +22,13 @@ class Resume::PdfExtractSchema < RubyLLM::Schema
         description: "Short one-line about the employer or division if shown on the CV; empty string if none"
       string :description,
         description: "Responsibilities, scope, and achievements for this role (bullets or paragraph as on the CV); empty string if none"
+      array :skills,
+        description: "Skills, tools, or technologies explicitly named in this job's bullets or duties (not repeated from the global skills list unless they appear here); dedupe by name; use [] if none" do
+        object do
+          string :name, description: "Skill or technology name"
+          string :description, description: "Optional context from this role; empty string if none"
+        end
+      end
       boolean :is_remote,
         description: "True only if explicitly remote or home office; false otherwise or if unclear"
       string :date_from, description: "Start date as ISO YYYY-MM-DD; use empty string if unknown"
