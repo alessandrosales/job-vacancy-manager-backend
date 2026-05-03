@@ -44,7 +44,7 @@ RSpec.configure do |config|
               gender: { type: :string, nullable: true },
               preferred_language: {
                 type: :string,
-                enum: %w[en pt-br es],
+                enum: %w[en pt_br es],
                 description: "UI / copy preference (not spoken languages list)"
               },
               created_at: { type: :string, format: "date-time" },
@@ -73,7 +73,7 @@ RSpec.configure do |config|
                   full_address: { type: :string, nullable: true },
                   relationship_status: { type: :string, nullable: true },
                   gender: { type: :string, nullable: true },
-                  preferred_language: { type: :string, enum: %w[en pt-br es] }
+                  preferred_language: { type: :string, enum: %w[en pt_br es] }
                 },
                 required: %w[name email password password_confirmation]
               }
@@ -97,7 +97,7 @@ RSpec.configure do |config|
                   full_address: { type: :string, nullable: true },
                   relationship_status: { type: :string, nullable: true },
                   gender: { type: :string, nullable: true },
-                  preferred_language: { type: :string, enum: %w[en pt-br es] }
+                  preferred_language: { type: :string, enum: %w[en pt_br es] }
                 }
               }
             },

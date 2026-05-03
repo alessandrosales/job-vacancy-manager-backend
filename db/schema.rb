@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_03_180001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_180002) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"

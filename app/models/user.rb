@@ -1,7 +1,7 @@
 class User < ApplicationRecord
   include UuidPrimaryKey
 
-  PREFERRED_UI_LANGUAGES = %w[en pt-br es].freeze
+  PREFERRED_UI_LANGUAGES = %w[en pt_br es].freeze
 
   has_secure_password
 
@@ -62,7 +62,6 @@ class User < ApplicationRecord
 
   def normalize_preferred_language
     v = preferred_language.to_s.strip.downcase
-    v = "pt-br" if v == "pt_br"
     self.preferred_language = PREFERRED_UI_LANGUAGES.include?(v) ? v : "en"
   end
 end

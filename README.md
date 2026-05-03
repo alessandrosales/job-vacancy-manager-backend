@@ -18,7 +18,7 @@ Designed to integrate with a separate front-end (SPA / Inertia / React): **JSON 
 
 ## Recent updates (2026-05-01)
 
-- **Users — `preferred_language`:** UI language preference (`en`, `pt-br`, `es`), default `en`; exposed on user JSON and update endpoints.
+- **Users — `preferred_language`:** UI language preference (`en`, `pt_br`, `es`), default `en`; exposed on user JSON and update endpoints.
 - **`Language`:** User-spoken languages with `name` and proficiency `level` (`beginner`, `intermediate`, `advanced`, `native`); full CRUD under `/api/v1/languages`.
 - **Resume PDF import** (`POST /api/v1/resumes/pdf-import`, `Resume::PdfImporter` + RubyLLM structured schema `Resume::PdfExtractSchema`):
   - Extracts **roles**, **languages**, **companies** (from employers in work history, with optional URL and text built from job tagline + duties), **reference links** (e.g. LinkedIn, GitHub), and **per-job skills** in addition to global skills, education, certifications, and work history.
