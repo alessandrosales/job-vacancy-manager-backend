@@ -54,16 +54,15 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors =
     ActiveModel::Type::Boolean.new.cast(ENV.fetch("MAILER_RAISE_DELIVERY_ERRORS", "true"))
 
-  smtp_cred = (Rails.application.credentials.dig(:smtp) || {}).with_indifferent_access
-  mailer_cred = (Rails.application.credentials.dig(:mailer) || {}).with_indifferent_access
-  smtp_configured = ENV["SMTP_ADDRESS"].present? || smtp_cred[:address].present?
+  smtp_configured = ENV["SMTP_ADDRESS"].present?
   config.action_mailer.perform_deliveries = smtp_configured
 
-  # Links em e-mails (ENV sobrescreve credentials.mailer).
+  # Links em e-mails (variáveis de ambiente; ver .env.example / plataforma de deploy).
   config.action_mailer.default_url_options = {
-    host: ENV["MAILER_DEFAULT_URL_HOST"].presence || mailer_cred[:default_url_host].presence || "example.com",
-    protocol: ENV["MAILER_DEFAULT_URL_PROTOCOL"].presence || mailer_cred[:default_url_protocol].presence || "https"
-  }
+    host: ENV.fetch("MAILER_DEFAULT_URL_HOST", "example.com"),
+    protocol: ENV.fetch("MAILER_DEFAULT_URL_PROTOCOL", "https"),
+    port: ENV["MAILER_DEFAULT_URL_PORT"].presence&.to_i
+  }.compact
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

@@ -850,6 +850,50 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/resume_create_request"
+  "/api/v1/resumes/pdf-import":
+    post:
+      summary: Creates resume from PDF (OpenAI extraction via RubyLLM)
+      tags:
+      - Resumes
+      security:
+      - bearer_auth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              - role_id
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file (not stored; parsed in memory only).
+                role_id:
+                  type: string
+                  format: uuid
+                  description: Role owned by the current user; required for the new resume.
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/resume"
+        '404':
+          description: role not found for current user
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
+        '422':
+          description: validation or extraction errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
   "/api/v1/resumes/{id}":
     parameters:
     - name: id

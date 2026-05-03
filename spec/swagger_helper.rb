@@ -42,10 +42,15 @@ RSpec.configure do |config|
               full_address: { type: :string, nullable: true },
               relationship_status: { type: :string, nullable: true },
               gender: { type: :string, nullable: true },
+              preferred_language: {
+                type: :string,
+                enum: %w[en pt-br es],
+                description: "UI / copy preference (not spoken languages list)"
+              },
               created_at: { type: :string, format: "date-time" },
               updated_at: { type: :string, format: "date-time" }
             },
-            required: %w[id name email created_at updated_at]
+            required: %w[id name email preferred_language created_at updated_at]
           },
           users_list: {
             type: :array,
@@ -67,7 +72,8 @@ RSpec.configure do |config|
                   age: { type: :integer, nullable: true, minimum: 0, maximum: 150 },
                   full_address: { type: :string, nullable: true },
                   relationship_status: { type: :string, nullable: true },
-                  gender: { type: :string, nullable: true }
+                  gender: { type: :string, nullable: true },
+                  preferred_language: { type: :string, enum: %w[en pt-br es] }
                 },
                 required: %w[name email password password_confirmation]
               }
@@ -90,7 +96,8 @@ RSpec.configure do |config|
                   age: { type: :integer, nullable: true, minimum: 0, maximum: 150 },
                   full_address: { type: :string, nullable: true },
                   relationship_status: { type: :string, nullable: true },
-                  gender: { type: :string, nullable: true }
+                  gender: { type: :string, nullable: true },
+                  preferred_language: { type: :string, enum: %w[en pt-br es] }
                 }
               }
             },
@@ -250,6 +257,52 @@ RSpec.configure do |config|
               }
             },
             required: %w[skill]
+          },
+          language: {
+            type: :object,
+            properties: {
+              id: { type: :string, format: :uuid },
+              user_id: { type: :string, format: :uuid },
+              name: { type: :string },
+              level: {
+                type: :string,
+                enum: %w[beginner intermediate advanced native]
+              },
+              created_at: { type: :string, format: "date-time" },
+              updated_at: { type: :string, format: "date-time" }
+            },
+            required: %w[id user_id name level created_at updated_at]
+          },
+          languages_list: {
+            type: :array,
+            items: { "$ref" => "#/components/schemas/language" }
+          },
+          language_create_request: {
+            type: :object,
+            properties: {
+              language: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  level: { type: :string, enum: %w[beginner intermediate advanced native] }
+                },
+                required: %w[name level]
+              }
+            },
+            required: %w[language]
+          },
+          language_update_request: {
+            type: :object,
+            properties: {
+              language: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  level: { type: :string, enum: %w[beginner intermediate advanced native] }
+                }
+              }
+            },
+            required: %w[language]
           },
           reference_link: {
             type: :object,

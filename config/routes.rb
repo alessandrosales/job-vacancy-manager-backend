@@ -10,12 +10,15 @@ Rails.application.routes.draw do
       resources :roles
       resources :companies
       resources :skills
+      resources :languages
       resources :reference_links, path: "reference-links"
       resources :certifications
       resources :educations
       resources :opportunity_statuses, path: "opportunity-statuses"
       get "dashboard", to: "dashboard#show"
       resources :opportunities
+      post "resumes/pdf-import", to: "resumes/pdf_imports#create"
+      post "resumes/description-suggestions", to: "resumes/description_suggestions#create"
       resources :resumes do
         patch "work-experiences", to: "resume_work_experiences#update"
         patch "certifications", to: "resume_certifications#update"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_02_120012) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_03_180001) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"
@@ -42,6 +42,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_120012) do
     t.datetime "updated_at", null: false
     t.string "user_id", limit: 36, null: false
     t.index ["user_id"], name: "index_educations_on_user_id"
+  end
+
+  create_table "languages", id: { type: :string, limit: 36 }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "level", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_id", limit: 36, null: false
+    t.index ["user_id"], name: "index_languages_on_user_id"
   end
 
   create_table "opportunities", id: { type: :string, limit: 36 }, force: :cascade do |t|
@@ -159,6 +168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_120012) do
     t.string "name", null: false
     t.string "password_digest", null: false
     t.string "phone"
+    t.string "preferred_language", default: "en", null: false
     t.string "relationship_status"
     t.string "token"
     t.datetime "updated_at", null: false
@@ -190,6 +200,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_120012) do
   add_foreign_key "certifications", "users"
   add_foreign_key "companies", "users"
   add_foreign_key "educations", "users"
+  add_foreign_key "languages", "users"
   add_foreign_key "opportunities", "companies"
   add_foreign_key "opportunities", "opportunity_statuses", column: "status_id"
   add_foreign_key "opportunities", "roles"

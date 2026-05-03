@@ -58,8 +58,7 @@ env:
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
 
-    # Action Mailer: preferir credentials (smtp / mailer) via rails credentials:edit — ver config/credentials/smtp.example.yml
-    # Ou injete ENV no deploy (sobrescreve credentials):
+    # Action Mailer / SMTP: variáveis de ambiente (ver .env.example na raiz do app).
     # MAILER_DEFAULT_URL_HOST: api.seudominio.com
     # MAILER_DEFAULT_URL_PROTOCOL: https
     # SMTP_ADDRESS: smtp.sendgrid.net

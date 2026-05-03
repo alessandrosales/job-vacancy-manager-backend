@@ -123,6 +123,8 @@ Relacionamentos detalhados: **`docs/db.mermaid`** e **`db/schema.rb`**.
 
 Segredo JWT: `Rails.application.credentials.dig(:jwt, :secret)` → fallback **`ENV["JWT_SECRET"]`** → `secret_key_base`. Em produção, defina um segredo dedicado.
 
+**Mailer e URL do frontend:** copie **`.env.example`** para **`.env`** na raiz do backend. Lá estão `FRONTEND_URL`, `MAILER_*` e `SMTP_*` (links em e-mails e servidor SMTP local, por exemplo Mailpit na porta 1025).
+
 ### Convenções de resposta
 
 - **JSON:** chaves em **`snake_case`**.

@@ -4,9 +4,9 @@ require "rails_helper"
 
 RSpec.describe FrontendUrl do
   describe ".password_reset_link" do
-    it "builds a URL with reset_token query param from credentials base" do
-      allow(Rails.application.credentials).to receive(:[]).with(:frontend_url).and_return("https://app.example.com")
-      allow(ENV).to receive(:[]).with("FRONTEND_URL").and_return(nil)
+    it "builds a URL with reset_token query param from FRONTEND_URL" do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("FRONTEND_URL").and_return("https://app.example.com")
 
       link = described_class.password_reset_link("tok123")
       uri = URI.parse(link)
@@ -17,7 +17,7 @@ RSpec.describe FrontendUrl do
     end
 
     it "raises in production when frontend URL is not configured" do
-      allow(Rails.application.credentials).to receive(:[]).with(:frontend_url).and_return(nil)
+      allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("FRONTEND_URL").and_return(nil)
       allow(Rails.env).to receive(:production?).and_return(true)
 

@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ruby-llm": {
+      "source": "faqndo97/ai-skills",
+      "sourceType": "github",
+      "skillPath": "ruby-llm/SKILL.md",
+      "computedHash": "8b87bd1e727e95c4efede42b55a488c055d521a7c4527b15bbd45eb30beab7e9"
+    },
     "ruby-on-rails-best-practices": {
       "source": "sergiodxa/agent-skills",
       "sourceType": "github",

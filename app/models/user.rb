@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   include UuidPrimaryKey
 
+  PREFERRED_UI_LANGUAGES = %w[en pt-br es].freeze
+
   has_secure_password
 
   generates_token_for :password_reset, expires_in: 2.hours do
@@ -9,6 +11,7 @@ class User < ApplicationRecord
 
   has_many :roles, dependent: :destroy
   has_many :skills, dependent: :destroy
+  has_many :languages, dependent: :destroy
   has_many :reference_links, dependent: :destroy
   has_many :work_experiences, dependent: :destroy
   has_many :certifications, dependent: :destroy
@@ -20,6 +23,7 @@ class User < ApplicationRecord
 
   before_validation :normalize_email
   before_validation :normalize_optional_profile_fields
+  before_validation :normalize_preferred_language
 
   validates :name, presence: true
   validates :email, presence: true,
@@ -29,11 +33,13 @@ class User < ApplicationRecord
   validates :age,
     numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 150 },
     allow_nil: true
+  validates :preferred_language, inclusion: { in: PREFERRED_UI_LANGUAGES }
 
   def as_api_json
     as_json(
       only: %i[
         id name email phone avatar_url bio age full_address relationship_status gender
+        preferred_language
         created_at updated_at
       ]
     )
@@ -52,5 +58,11 @@ class User < ApplicationRecord
 
       self[attr] = val.to_s.strip.presence
     end
+  end
+
+  def normalize_preferred_language
+    v = preferred_language.to_s.strip.downcase
+    v = "pt-br" if v == "pt_br"
+    self.preferred_language = PREFERRED_UI_LANGUAGES.include?(v) ? v : "en"
   end
 end

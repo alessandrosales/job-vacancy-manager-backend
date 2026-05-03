@@ -17,6 +17,7 @@ erDiagram
         string gender %% default null
         string password_digest
         string token %% default null
+        string preferred_language "en|pt-br|es" %% default "en"
         datetime created_at
         datetime updated_at
     }
@@ -100,6 +101,15 @@ erDiagram
         datetime updated_at
     }
 
+    languages {
+        uuid id PK
+        uuid user_id FK
+        string name
+        string level "beginner|intermediate|advanced|native"
+        datetime created_at
+        datetime updated_at
+    }
+
     resumes {
         uuid id PK
         uuid user_id FK
@@ -174,6 +184,7 @@ erDiagram
     users ||--o{ companies : "user_id"
     users ||--o{ roles : "user_id"
     users ||--o{ skills : "user_id"
+    users ||--o{ languages : "user_id"
     users ||--o{ reference_links : "user_id"
     users ||--o{ work_experiences : "user_id"
     users ||--o{ work_experience_skills : "user_id"

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Base URL of the SPA used in transactional e-mails (password reset links, etc.).
-# Set +Rails.application.credentials[:frontend_url]+ (string, no trailing slash) or +ENV["FRONTEND_URL"]+.
+# Set +ENV["FRONTEND_URL"]+ (string, no trailing slash); see +.env.example+.
 # In non-production, falls back to +http://localhost:5173+ when unset so local mail previews work.
 module FrontendUrl
   class MissingFrontendUrlError < StandardError; end
@@ -10,14 +10,12 @@ module FrontendUrl
 
   class << self
     def base
-      url = Rails.application.credentials[:frontend_url].presence ||
-        ENV["FRONTEND_URL"].presence
-      url = url.to_s.strip.chomp("/")
+      url = ENV["FRONTEND_URL"].to_s.strip.chomp("/")
       return url if url.present?
       return "http://localhost:5173" unless Rails.env.production?
 
       raise MissingFrontendUrlError,
-        "Set credentials[:frontend_url] or ENV['FRONTEND_URL'] for password reset links"
+        "Set ENV['FRONTEND_URL'] for password reset links (see .env.example)"
     end
 
     def password_reset_link(reset_token)

@@ -49,7 +49,8 @@ module Api
       def user_params
         permitted = params.require(:user).permit(
           :name, :email, :password, :password_confirmation,
-          :phone, :avatar_url, :bio, :age, :full_address, :relationship_status, :gender
+          :phone, :avatar_url, :bio, :age, :full_address, :relationship_status, :gender,
+          :preferred_language
         )
         permitted[:age] = nil if permitted.key?(:age) && permitted[:age].to_s.strip.empty?
         permitted
@@ -58,7 +59,8 @@ module Api
       def user_update_params
         permitted = params.require(:user).permit(
           :name, :email, :password, :password_confirmation,
-          :phone, :avatar_url, :bio, :age, :full_address, :relationship_status, :gender
+          :phone, :avatar_url, :bio, :age, :full_address, :relationship_status, :gender,
+          :preferred_language
         )
         permitted.delete(:password) if permitted[:password].blank?
         permitted.delete(:password_confirmation) if permitted[:password_confirmation].blank?
