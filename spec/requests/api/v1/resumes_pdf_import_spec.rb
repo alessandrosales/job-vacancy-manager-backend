@@ -42,6 +42,18 @@ RSpec.describe "POST /api/v1/resumes/pdf-import" do
     expect(body["title"]).to eq("From API")
     expect(body["user_id"]).to eq(user.id)
     expect(body["role_id"]).to eq(role.id)
+    expect(body["preferred_language"]).to eq("en")
+  end
+
+  it "returns 201 with preferred_language from multipart param" do
+    pdf = Rack::Test::UploadedFile.new(StringIO.new("%PDF-1.4 minimal\n"), "application/pdf", original_filename: "cv.pdf")
+
+    post "/api/v1/resumes/pdf-import",
+      params: { file: pdf, role_id: role.id, preferred_language: "es" },
+      headers: auth_headers
+
+    expect(response).to have_http_status(:created)
+    expect(JSON.parse(response.body)["preferred_language"]).to eq("es")
   end
 
   it "returns 422 when file is missing" do

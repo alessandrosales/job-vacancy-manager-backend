@@ -22,7 +22,12 @@ module Api
             return
           end
 
-          resume = Resume::PdfImporter.call(user: current_user, role_id: role_id, pdf_io: uploaded.tempfile)
+          resume = Resume::PdfImporter.call(
+            user: current_user,
+            role_id: role_id,
+            pdf_io: uploaded.tempfile,
+            preferred_language: params[:preferred_language]
+          )
           render json: resume.as_api_json, status: :created
         rescue Resume::PdfImporter::Error => e
           render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity

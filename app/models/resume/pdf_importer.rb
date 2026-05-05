@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "set"
+
 class Resume::PdfImporter
   class Error < StandardError; end
 
@@ -17,7 +19,7 @@ class Resume::PdfImporter
 
   class << self
     # When +extracted_payload+ is set (e.g. in tests), skips the PDF tempfile and RubyLLM call.
-    def call(user:, role_id:, pdf_io: nil, extracted_payload: nil)
+    def call(user:, role_id:, pdf_io: nil, extracted_payload: nil, preferred_language: nil)
       raise ArgumentError, "pdf_io or extracted_payload is required" if pdf_io.nil? && extracted_payload.nil?
 
       user.roles.find_by!(id: role_id)
@@ -38,7 +40,7 @@ class Resume::PdfImporter
           end
         end
 
-      persist_from_payload!(user, role_id, extracted)
+      persist_from_payload!(user, role_id, extracted, preferred_language)
     end
 
     private
@@ -68,7 +70,7 @@ class Resume::PdfImporter
       raise Error, "Unexpected response from language model."
     end
 
-    def persist_from_payload!(user, role_id, payload)
+    def persist_from_payload!(user, role_id, payload, preferred_language_raw)
       resume_meta = (payload["resume"] || {}).stringify_keys
       title = resume_meta["title"].to_s.strip.presence || "Imported resume"
       description = resume_meta["description"].to_s.strip.presence
@@ -82,8 +84,12 @@ class Resume::PdfImporter
         work_experience_ids = we_rows.map(&:first)
         we_skill_ids = we_rows.flat_map(&:last)
 
-        education_ids = Array(payload["educations"]).filter_map { |row| create_education!(user, row) }
-        certification_ids = Array(payload["certifications"]).filter_map { |row| create_certification!(user, row) }
+        education_ids = uniq_education_payload_rows(payload["educations"]).filter_map do |row|
+          create_education!(user, row)
+        end
+        certification_ids = uniq_certification_payload_rows(payload["certifications"]).filter_map do |row|
+          create_certification!(user, row)
+        end
         skill_ids = (
           Array(payload["skills"]).filter_map { |row| find_or_create_skill!(user, row) } +
           we_skill_ids
@@ -92,7 +98,12 @@ class Resume::PdfImporter
         Array(payload["languages"]).each { |row| find_or_create_language!(user, row) }
         Array(payload["reference_links"]).each { |row| find_or_create_reference_link!(user, row) }
 
-        resume = user.resumes.create!(title: title, description: description, role_id: role_id)
+        resume = user.resumes.create!(
+          title: title,
+          description: description,
+          role_id: role_id,
+          preferred_language: preferred_language_raw
+        )
 
         unless resume.sync_work_experience_links!(user, work_experience_ids)
           raise Error, "Failed to link work experiences to the resume."
@@ -241,15 +252,16 @@ class Resume::PdfImporter
     end
 
     def find_existing_education(user, row)
-      inst = row["institution_name"].to_s.strip
-      degree = row["degree"].to_s.strip.presence
-      field = row["field_of_study"].to_s.strip.presence
+      inst_key = normalize_fuzzy_text(row["institution_name"])
+      degree_key = normalize_fuzzy_text(row["degree"].presence || "")
+      field_key = normalize_fuzzy_text(row["field_of_study"].presence || "")
       date_from = parse_date(row["date_from"])
       date_to = parse_date(row["date_to"])
 
-      user.educations.where("LOWER(institution_name) = ?", inst.downcase).find do |ed|
-        ed.degree.to_s.strip.presence == degree &&
-          ed.field_of_study.to_s.strip.presence == field &&
+      user.educations.find do |ed|
+        normalize_fuzzy_text(ed.institution_name) == inst_key &&
+          normalize_fuzzy_text(ed.degree.presence || "") == degree_key &&
+          normalize_fuzzy_text(ed.field_of_study.presence || "") == field_key &&
           dates_equal?(ed.date_from, date_from) &&
           dates_equal?(ed.date_to, date_to)
       end
@@ -270,17 +282,83 @@ class Resume::PdfImporter
     end
 
     def find_existing_certification(user, row)
-      name = row["name"].to_s.strip
+      name_key = normalize_fuzzy_text(row["name"])
       date_from = parse_date(row["date_from"])
       date_to = parse_date(row["date_to"])
 
-      user.certifications.where("LOWER(name) = ?", name.downcase).find do |c|
-        dates_equal?(c.date_from, date_from) && dates_equal?(c.date_to, date_to)
+      user.certifications.find do |c|
+        normalize_fuzzy_text(c.name) == name_key &&
+          dates_equal?(c.date_from, date_from) &&
+          dates_equal?(c.date_to, date_to)
       end
     end
 
     def dates_equal?(a, b)
       (a.nil? && b.nil?) || a == b
+    end
+
+    # Comparação insensível a caixa, espaços irregulares e formas Unicode equivalentes (NFKC).
+    def normalize_fuzzy_text(value)
+      s = value.to_s
+      s = s.unicode_normalize(:nfkc) if s.respond_to?(:unicode_normalize)
+      s = s.gsub(/[\u00A0\u2000-\u200B\uFEFF]/, " ")
+      s.gsub(/\s+/, " ").strip.downcase
+    end
+
+    def date_key_for_dedupe(date)
+      date&.iso8601 || ""
+    end
+
+    def certification_row_dedupe_key(row)
+      row = row.to_h.stringify_keys
+      [
+        normalize_fuzzy_text(row["name"]),
+        date_key_for_dedupe(parse_date(row["date_from"])),
+        date_key_for_dedupe(parse_date(row["date_to"])),
+      ]
+    end
+
+    def education_row_dedupe_key(row)
+      row = row.to_h.stringify_keys
+      [
+        normalize_fuzzy_text(row["institution_name"]),
+        normalize_fuzzy_text(row["degree"].presence || ""),
+        normalize_fuzzy_text(row["field_of_study"].presence || ""),
+        date_key_for_dedupe(parse_date(row["date_from"])),
+        date_key_for_dedupe(parse_date(row["date_to"])),
+      ]
+    end
+
+    def uniq_certification_payload_rows(rows)
+      seen = Set.new
+      out = []
+      Array(rows).each do |raw|
+        row = raw.to_h.stringify_keys
+        next if row["name"].blank?
+
+        key = certification_row_dedupe_key(row)
+        next if seen.include?(key)
+
+        seen.add(key)
+        out << row
+      end
+      out
+    end
+
+    def uniq_education_payload_rows(rows)
+      seen = Set.new
+      out = []
+      Array(rows).each do |raw|
+        row = raw.to_h.stringify_keys
+        next if row["institution_name"].blank?
+
+        key = education_row_dedupe_key(row)
+        next if seen.include?(key)
+
+        seen.add(key)
+        out << row
+      end
+      out
     end
 
     def find_or_create_skill!(user, row)

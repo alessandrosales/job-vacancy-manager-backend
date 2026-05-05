@@ -72,6 +72,7 @@ RSpec.describe "API V1 — Resumes", openapi_spec: "v1/swagger.yaml" do
           data = JSON.parse(response.body)
           expect(data["title"]).to eq("Main")
           expect(data["user_id"]).to eq(owner.id)
+          expect(data["preferred_language"]).to eq("en")
         end
       end
 
@@ -160,10 +161,18 @@ RSpec.describe "API V1 — Resumes", openapi_spec: "v1/swagger.yaml" do
         let(:resume) { owner.resumes.create!(title: "Old", role: role) }
         let(:id) { resume.id }
         let(:Authorization) { "Bearer #{User::JwtIssuer.encode(owner)}" }
-        let(:body) { { resume: { title: "New title", description: "Updated body" } } }
+        let(:body) do
+          { resume: {
+            title: "New title",
+            description: "Updated body",
+            preferred_language: "pt_br",
+          }, }
+        end
 
         run_test! do |response|
-          expect(JSON.parse(response.body)["title"]).to eq("New title")
+          data = JSON.parse(response.body)
+          expect(data["title"]).to eq("New title")
+          expect(data["preferred_language"]).to eq("pt_br")
         end
       end
     end

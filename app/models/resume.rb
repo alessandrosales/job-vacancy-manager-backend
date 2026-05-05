@@ -3,6 +3,8 @@
 class Resume < ApplicationRecord
   include UuidPrimaryKey
 
+  PREFERRED_LANGUAGES = %w[en pt_br es].freeze
+
   belongs_to :user
   belongs_to :role
 
@@ -15,11 +17,21 @@ class Resume < ApplicationRecord
   has_many :resume_skills, dependent: :destroy
   has_many :skills, through: :resume_skills
 
+  before_validation :normalize_preferred_language_column
+
   validates :title, presence: true
+  validates :preferred_language, inclusion: { in: PREFERRED_LANGUAGES }
   validate :role_owned_by_user
 
+  def self.normalize_preferred_language(raw)
+    s = raw.to_s.strip
+    PREFERRED_LANGUAGES.include?(s) ? s : "en"
+  end
+
   def as_api_json
-    as_json(only: %i[id user_id role_id title description created_at updated_at]).merge(
+    as_json(
+      only: %i[id user_id role_id title description preferred_language created_at updated_at]
+    ).merge(
       "work_experience_ids" => sorted_join_foreign_ids(:resume_work_experiences, :work_experience_id),
       "certification_ids" => sorted_join_foreign_ids(:resume_certifications, :certification_id),
       "education_ids" => sorted_join_foreign_ids(:resume_educations, :education_id),
@@ -44,6 +56,10 @@ class Resume < ApplicationRecord
   end
 
   private
+
+  def normalize_preferred_language_column
+    self.preferred_language = Resume.normalize_preferred_language(preferred_language)
+  end
 
   def sorted_join_foreign_ids(join_assoc, fk_column)
     send(join_assoc).sort_by do |row|

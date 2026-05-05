@@ -95,6 +95,7 @@ RSpec.describe Resume::PdfImporter do
       expect(resume.title).to eq("Backend Developer")
       expect(resume.description).to eq("Summary line")
       expect(resume.role_id).to eq(role.id)
+      expect(resume.preferred_language).to eq("en")
       expect(resume.work_experience_ids.size).to eq(2)
       expect(resume.education_ids.size).to eq(1)
       expect(resume.certification_ids.size).to eq(1)
@@ -124,6 +125,72 @@ RSpec.describe Resume::PdfImporter do
         "https://www.linkedin.com/in/jane"
       )
       expect(links.find { |l| l.url.include?("linkedin") }.title).to eq("LinkedIn")
+    end
+
+    it "stores preferred_language when provided" do
+      described_class.call(
+        user: user,
+        role_id: role.id,
+        extracted_payload: payload,
+        preferred_language: "pt_br"
+      )
+      expect(user.resumes.order(:created_at).last.preferred_language).to eq("pt_br")
+    end
+
+    let(:empty_child_payload) do
+      {
+        "resume" => { "title" => "Dedupe test" },
+        "work_experiences" => [],
+        "educations" => [],
+        "certifications" => [],
+        "skills" => [],
+        "roles" => [],
+        "languages" => [],
+        "reference_links" => []
+      }
+    end
+
+    it "deduplicates certifications repeated in the same payload (case, nil dates, odd spaces)" do
+      dup_cert_payload = empty_child_payload.merge(
+        "certifications" => [
+          { "name" => "Gestão Ágil de Projetos", "date_from" => "", "date_to" => "" },
+          { "name" => "GESTÃO ÁGIL DE PROJETOS", "date_from" => nil, "date_to" => nil },
+          { "name" => "Gestão \u00A0 Ágil  de  Projetos", "date_from" => "", "date_to" => "" }
+        ]
+      )
+      expect do
+        described_class.call(user: user, role_id: role.id, extracted_payload: dup_cert_payload)
+      end.to change(Certification, :count).by(1)
+
+      resume = user.resumes.order(:created_at).last
+      expect(resume.certification_ids.uniq.size).to eq(1)
+    end
+
+    it "deduplicates educations in the same payload when field_of_study differs only by case" do
+      dup_edu_payload = empty_child_payload.merge(
+        "educations" => [
+          {
+            "institution_name" => "Faculdade de Tecnologia do Nordeste",
+            "degree" => "",
+            "field_of_study" => "Análise de Desenvolvimento de Sistemas",
+            "date_from" => "2007-01-01",
+            "date_to" => ""
+          },
+          {
+            "institution_name" => "faculdade de tecnologia do nordeste",
+            "degree" => nil,
+            "field_of_study" => "análise de desenvolvimento de sistemas",
+            "date_from" => "2007-01-01",
+            "date_to" => ""
+          }
+        ]
+      )
+      expect do
+        described_class.call(user: user, role_id: role.id, extracted_payload: dup_edu_payload)
+      end.to change(Education, :count).by(1)
+
+      resume = user.resumes.order(:created_at).last
+      expect(resume.education_ids.uniq.size).to eq(1)
     end
 
     it "does not duplicate user data when importing the same payload again" do

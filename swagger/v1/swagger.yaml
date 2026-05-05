@@ -875,6 +875,13 @@ paths:
                   type: string
                   format: uuid
                   description: Role owned by the current user; required for the new resume.
+                preferred_language:
+                  type: string
+                  enum:
+                  - en
+                  - pt_br
+                  - es
+                  description: Locale for generated résumé; defaults to en when omitted.
       responses:
         '201':
           description: created
@@ -2377,6 +2384,13 @@ components:
         description:
           type: string
           nullable: true
+        preferred_language:
+          type: string
+          description: Locale for generated résumé output.
+          enum:
+          - en
+          - pt_br
+          - es
         created_at:
           type: string
           format: date-time
@@ -2408,6 +2422,7 @@ components:
       - user_id
       - role_id
       - title
+      - preferred_language
       - created_at
       - updated_at
       - work_experience_ids
@@ -2432,6 +2447,13 @@ components:
             role_id:
               type: string
               format: uuid
+            preferred_language:
+              type: string
+              enum:
+              - en
+              - pt_br
+              - es
+              description: Defaults to en when omitted.
           required:
           - title
           - role_id
@@ -2451,6 +2473,12 @@ components:
             role_id:
               type: string
               format: uuid
+            preferred_language:
+              type: string
+              enum:
+              - en
+              - pt_br
+              - es
       required:
       - resume
     resume_work_experience_sync_request:

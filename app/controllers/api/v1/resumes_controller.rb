@@ -52,7 +52,7 @@ module Api
       end
 
       def resume_params
-        params.require(:resume).permit(:title, :description, :role_id)
+        params.require(:resume).permit(:title, :description, :role_id, :preferred_language)
       end
     end
   end
