@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_183452) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_05_233838) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"
@@ -128,6 +128,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_183452) do
   end
 
   create_table "resumes", id: { type: :string, limit: 36 }, force: :cascade do |t|
+    t.text "compiled_markdown"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "preferred_language", default: "en", null: false
