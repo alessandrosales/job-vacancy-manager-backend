@@ -24,13 +24,13 @@ class Resume < ApplicationRecord
   validate :role_owned_by_user
 
   def self.normalize_preferred_language(raw)
-    s = raw.to_s.strip
+    s = raw.to_s.strip.downcase.tr("-", "_")
     PREFERRED_LANGUAGES.include?(s) ? s : "en"
   end
 
   def as_api_json
     as_json(
-      only: %i[id user_id role_id title description preferred_language created_at updated_at]
+      only: %i[id user_id role_id title description preferred_language compiled_markdown created_at updated_at]
     ).merge(
       "work_experience_ids" => sorted_join_foreign_ids(:resume_work_experiences, :work_experience_id),
       "certification_ids" => sorted_join_foreign_ids(:resume_certifications, :certification_id),
