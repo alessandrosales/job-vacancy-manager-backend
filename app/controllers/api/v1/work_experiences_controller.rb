@@ -43,7 +43,7 @@ module Api
       end
 
       def work_experience_params
-        params.require(:work_experience).permit(:title, :company_name, :is_remote, :date_from, :date_to)
+        params.require(:work_experience).permit(:title, :description, :company_name, :is_remote, :date_from, :date_to)
       end
     end
   end

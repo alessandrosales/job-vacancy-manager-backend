@@ -18,7 +18,7 @@ class WorkExperience < ApplicationRecord
 
   def as_api_json
     ids = work_experience_skills.order(created_at: :asc).pluck(:skill_id)
-    as_json(only: %i[id user_id title company_name is_remote date_from date_to created_at updated_at]).merge(
+    as_json(only: %i[id user_id title description company_name is_remote date_from date_to created_at updated_at]).merge(
       "skill_ids" => ids
     )
   end

@@ -85,6 +85,22 @@ class Resume::CompiledExport::DocxRenderer
     end
   end
 
+  def emit_text_lines_with_breaks(para, str, text_opts)
+    lines = str.split("\n", -1)
+    lines.each_with_index do |line, idx|
+      is_last = idx == lines.size - 1
+      if line.empty?
+        para.br unless is_last
+      elsif text_opts.empty?
+        para.text line
+        para.br unless is_last
+      else
+        para.text line, text_opts
+        para.br unless is_last
+      end
+    end
+  end
+
   def emit_inline_runs(para, elements, bold: false, italic: false)
     elements.each do |el|
       case el.type
@@ -95,11 +111,19 @@ class Resume::CompiledExport::DocxRenderer
         opts = {}
         opts[:bold] = true if bold
         opts[:italic] = true if italic
-        if opts.empty?
-          para.text str
-        else
-          para.text str, opts
+
+        # Kramdown keeps single newlines inside one :p as literal "\n" in a single text node (not :line_break).
+        # Word would otherwise flow contact + address + URLs as one wrapping line.
+        unless str.include?("\n")
+          if opts.empty?
+            para.text str
+          else
+            para.text str, opts
+          end
+          next
         end
+
+        emit_text_lines_with_breaks(para, str, opts)
       when :strong
         emit_inline_runs(para, el.children, bold: true, italic: italic)
       when :em

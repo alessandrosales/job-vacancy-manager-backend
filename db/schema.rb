@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_05_233838) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_120000) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"
@@ -192,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_05_233838) do
     t.datetime "created_at", null: false
     t.date "date_from"
     t.date "date_to"
+    t.text "description"
     t.boolean "is_remote", default: false, null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false

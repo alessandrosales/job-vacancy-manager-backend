@@ -104,6 +104,8 @@ RSpec.describe Resume::PdfImporter do
 
       dev_we, lead_we = user.work_experiences.order(date_from: :desc).to_a
       expect(dev_we.title).to eq("Developer")
+      expect(dev_we.description).to eq("B2B SaaS\n\nBuilt APIs and mentored juniors.")
+      expect(lead_we.description).to eq("Owned CI/CD migration.")
       expect(dev_we.skill_ids.size).to eq(2)
       expect(lead_we.skill_ids).to eq([ user.skills.find_by!("name" => "Ruby").id ])
       expect(user.roles.order(:created_at).last.name).to eq("Staff Engineer")
@@ -135,6 +137,51 @@ RSpec.describe Resume::PdfImporter do
         preferred_language: "pt_br"
       )
       expect(user.resumes.order(:created_at).last.preferred_language).to eq("pt_br")
+    end
+
+    it "stores one work_experience description when company_description and description are the same" do
+      narrative = "Developed the Listados project aimed at expanding the portfolio."
+      payload_dup = empty_child_payload.merge(
+        "work_experiences" => [
+          {
+            "title" => "Web Developer",
+            "company_name" => "Dedupe Desc Co",
+            "company_url" => "",
+            "company_description" => narrative,
+            "description" => narrative,
+            "skills" => [],
+            "is_remote" => false,
+            "date_from" => "2022-01-01",
+            "date_to" => ""
+          }
+        ]
+      )
+      described_class.call(user: user, role_id: role.id, extracted_payload: payload_dup)
+      we = user.work_experiences.find_by!(company_name: "Dedupe Desc Co")
+      expect(we.description).to eq(narrative)
+    end
+
+    it "drops consecutive duplicate paragraphs pasted only in the role description field" do
+      para = "Responsible for implementation and evolution of the platform."
+      doubled = "#{para}\n\n#{para}"
+      payload_para = empty_child_payload.merge(
+        "work_experiences" => [
+          {
+            "title" => "Engineer",
+            "company_name" => "ParaDedup Inc",
+            "company_url" => "",
+            "company_description" => "",
+            "description" => doubled,
+            "skills" => [],
+            "is_remote" => true,
+            "date_from" => "2021-06-01",
+            "date_to" => "2022-01-01"
+          }
+        ]
+      )
+      described_class.call(user: user, role_id: role.id, extracted_payload: payload_para)
+      we = user.work_experiences.find_by!(company_name: "ParaDedup Inc")
+      expect(we.description).to eq(para)
     end
 
     let(:empty_child_payload) do

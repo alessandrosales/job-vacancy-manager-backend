@@ -353,6 +353,7 @@ RSpec.configure do |config|
               id: { type: :string, format: :uuid },
               user_id: { type: :string, format: :uuid },
               title: { type: :string },
+              description: { type: :string, nullable: true, description: "Role responsibilities or achievements (plain text)" },
               company_name: { type: :string },
               is_remote: { type: :boolean },
               date_from: { type: :string, format: :date, nullable: true },
@@ -373,6 +374,7 @@ RSpec.configure do |config|
                 type: :object,
                 properties: {
                   title: { type: :string },
+                  description: { type: :string, nullable: true },
                   company_name: { type: :string },
                   is_remote: { type: :boolean },
                   date_from: { type: :string, format: :date, nullable: true },
@@ -390,6 +392,7 @@ RSpec.configure do |config|
                 type: :object,
                 properties: {
                   title: { type: :string },
+                  description: { type: :string, nullable: true },
                   company_name: { type: :string },
                   is_remote: { type: :boolean },
                   date_from: { type: :string, format: :date, nullable: true },

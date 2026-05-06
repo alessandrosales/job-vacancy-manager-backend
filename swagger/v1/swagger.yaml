@@ -1948,6 +1948,9 @@ components:
           format: uuid
         title:
           type: string
+        description:
+          type: string
+          nullable: true
         company_name:
           type: string
         is_remote:
@@ -1986,6 +1989,9 @@ components:
           properties:
             title:
               type: string
+            description:
+              type: string
+              nullable: true
             company_name:
               type: string
             is_remote:
@@ -2012,6 +2018,9 @@ components:
           properties:
             title:
               type: string
+            description:
+              type: string
+              nullable: true
             company_name:
               type: string
             is_remote:

@@ -65,6 +65,7 @@ erDiagram
         uuid id PK
         uuid user_id FK
         string title
+        text description %% default null — narrative for CV bullets when present (MarkdownCompiler)
         string company_name
         boolean is_remote %% default false
         date date_from
@@ -117,7 +118,7 @@ erDiagram
         text description %% default null
         uuid role_id FK
         string preferred_language "en|pt_br|es" %% default "en"
-        text compiled_markdown %% default null
+        text compiled_markdown %% default null — ATS Markdown gerado; experiências = prosa em parágrafos; "## Skills" = só vínculos resume_skills (pós-processado no MarkdownCompiler)
         datetime updated_at "última atualização lógica do doc"
         datetime created_at
     }

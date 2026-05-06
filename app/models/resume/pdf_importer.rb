@@ -10,7 +10,7 @@ class Resume::PdfImporter
     Use ISO date format YYYY-MM-DD for all dates; use empty strings for unknown dates.
     For booleans, infer is_remote only when the document clearly states remote, home office, or distributed work.
     Deduplicate skills and roles by name (case-insensitive). Extract languages only when the CV lists languages or proficiency (map to beginner, intermediate, advanced, or native; use intermediate when unclear).
-    For each job, include description with responsibilities and achievements from that role; list skills under each job's skills array for tools or technologies named in that role's bullets (deduplicated per job). Include company_url and company_description only when explicitly on the CV; use empty strings when absent. The role description is used to populate the user's company record for that employer. Create one employer entry per distinct company_name (same employer across roles should repeat the same name).
+    For each job, include description with responsibilities and achievements from that role; list skills under each job's skills array for tools or technologies named in that role's bullets (deduplicated per job). Include company_url and company_description only when explicitly on the CV; use empty strings when absent. Prefer a short company_description line (about the employer) and fuller role duties in description—do not paste the same role paragraph into both fields; the importer dedupes if you do anyway. Joined text is saved on each work-experience row and merged into the user's company record per employer name. Create one employer entry per distinct company_name (same employer across roles should repeat the same name).
     Extract reference_links for every visible LinkedIn, GitHub, GitLab, portfolio, or other http(s) link in headers, contact, or footer; use full https URLs; deduplicate by URL.
     The importer never creates duplicate user-owned rows: if work experience, education, certification, skill, role, language, company, or reference link already exists for the account (same identifying fields), it is reused and not overwritten.
     If no clear resume title exists, use the most prominent job title or a short professional label.
@@ -126,6 +126,7 @@ class Resume::PdfImporter
       row = row.to_h.stringify_keys
       return nil if row["title"].blank? || row["company_name"].blank?
 
+      combined_description = build_company_description_from_experience_row(row)
       skill_ids = skill_ids_from_work_experience_skill_rows(user, row)
 
       existing_we = find_existing_work_experience(user, row)
@@ -134,11 +135,16 @@ class Resume::PdfImporter
         return [ existing_we.id, skill_ids ]
       end
 
-      upsert_company_from_experience_row!(user, row, preexisting_company_ids: preexisting_company_ids)
+      upsert_company_from_experience_row!(
+        user, row,
+        preexisting_company_ids: preexisting_company_ids,
+        combined_description: combined_description
+      )
 
       we = user.work_experiences.create!(
         title: row["title"].to_s.strip,
         company_name: row["company_name"].to_s.strip,
+        description: combined_description.presence,
         is_remote: cast_bool(row["is_remote"]),
         date_from: parse_date(row["date_from"]),
         date_to: parse_date(row["date_to"])
@@ -190,12 +196,11 @@ class Resume::PdfImporter
       end
     end
 
-    def upsert_company_from_experience_row!(user, row, preexisting_company_ids:)
+    def upsert_company_from_experience_row!(user, row, preexisting_company_ids:, combined_description:)
       name = row["company_name"].to_s.strip
       return if name.blank?
 
       url = row["company_url"].to_s.strip.presence
-      company_text = build_company_description_from_experience_row(row)
 
       existing = user.companies.where("LOWER(name) = ?", name.downcase).first
       if existing
@@ -203,8 +208,8 @@ class Resume::PdfImporter
 
         updates = {}
         updates[:url] = url if url.present? && existing.url.blank?
-        if company_text.present?
-          merged = merge_company_description(existing.description, company_text)
+        if combined_description.present?
+          merged = merge_company_description(existing.description, combined_description)
           updates[:description] = merged if merged != existing.description
         end
         existing.update!(updates) if updates.any?
@@ -214,7 +219,7 @@ class Resume::PdfImporter
       user.companies.create!(
         name: name,
         url: url,
-        description: company_text,
+        description: combined_description,
         interest_level: 0
       )
     end
@@ -229,10 +234,51 @@ class Resume::PdfImporter
       "#{cur}\n\n---\n\n#{add}"
     end
 
+    # Combines employer blurb + role narrative from extraction. Models often duplicate the same
+    # paragraph in company_description and description — avoid storing it twice.
     def build_company_description_from_experience_row(row)
+      row = row.to_h.stringify_keys
       tagline = row["company_description"].to_s.strip.presence
       job_body = row["description"].to_s.strip.presence
-      [ tagline, job_body ].compact.join("\n\n").presence
+      merged = merge_distinct_narrative_segments(tagline, job_body)
+      collapse_duplicate_paragraphs(merged)
+    end
+
+    def merge_distinct_narrative_segments(employer_text, role_text)
+      a = employer_text.to_s.strip.presence
+      b = role_text.to_s.strip.presence
+      return nil if a.blank? && b.blank?
+      return b if a.blank?
+      return a if b.blank?
+      return a if narratives_effectively_same?(a, b)
+
+      if b.include?(a)
+        b
+      elsif a.include?(b)
+        a
+      else
+        "#{a}\n\n#{b}"
+      end
+    end
+
+    def narratives_effectively_same?(left, right)
+      normalize_narrative_whitespace(left) == normalize_narrative_whitespace(right)
+    end
+
+    def normalize_narrative_whitespace(str)
+      str.to_s.gsub(/\s+/, " ").strip
+    end
+
+    def collapse_duplicate_paragraphs(text)
+      s = text.to_s.strip
+      return nil if s.blank?
+
+      paras = s.split(/\n{2,}/).map(&:strip).reject(&:blank?)
+      out = []
+      paras.each do |para|
+        out << para if out.empty? || !narratives_effectively_same?(out.last, para)
+      end
+      out.join("\n\n").presence
     end
 
     def create_education!(user, row)

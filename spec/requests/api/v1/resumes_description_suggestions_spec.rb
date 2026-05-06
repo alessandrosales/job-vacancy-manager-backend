@@ -25,6 +25,7 @@ RSpec.describe "POST /api/v1/resumes/description-suggestions" do
       params: {
         title: "Senior Engineer",
         role_name: "Backend",
+        preferred_language: "pt_br",
         work_experience_summaries: [ "Acme — Lead" ],
         certification_names: [ "AWS" ],
         education_summaries: [ "State U — BSc" ],
