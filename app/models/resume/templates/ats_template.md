@@ -50,8 +50,14 @@ character-for-character — never keep English headings when the resume language
 
 ## Education
 
-### {Degree} in {Field of Study}
+### {Education title line}
 **{Institution Name}** | *{Start Month Year} – {End Month Year | Present}*
+
+{Education title line rule:
+- if both Degree and Field of Study exist: "{Degree} in {Field of Study}" (localized connector)
+- if only Degree exists: "{Degree}"
+- if only Field of Study exists: "{Field of Study}"
+- if both are missing: omit this `###` line entirely (never output placeholders such as "(degree)", "(field)", "N/A", "não informado")}
 
 *(Repeat for each education entry, most-recent first.)*
 
@@ -89,3 +95,4 @@ character-for-character — never keep English headings when the resume language
 11. **Work experience prose** — when `description` is populated for a job, it is the primary source for that job's paragraphs; when it is absent, write a short factual paragraph only from title, employer, dates, and arrangement (do not infer a skills catalogue for this §). Never switch to bullet lists for this section.
 12. **Coverage** — when the compiler lists numbered fragments from a job's stored description, reflect **every** fragment's meaning in your prose for that role (same facts; smoother wording). Emphasise or order ideas toward the resume's linked **target role** only where the description honestly supports it.
 13. **Skills comma line** — list **only** names from the resume ↔ skills join (`resume_skills`). Do not harvest extra labels from experience prose, certifications, or free text. Mentions inside job paragraphs are narrative only unless that keyword is already a resume-linked skill.
+14. **Education placeholders are forbidden** — never print placeholder tokens like `(degree)`, `(field)`, `(institution)`, `(unknown)`, `N/A`, or translated variants in visible resume text. If an education subfield is missing, omit that fragment and keep only available factual data.

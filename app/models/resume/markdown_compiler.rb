@@ -270,11 +270,17 @@ class Resume::MarkdownCompiler
 
     def build_education_section(educations, lex, code)
       lines = [ "EDUCATION (source data; most-recent first — translate content but keep facts):" ]
+      lines << "  Output rule: never emit placeholders like (degree)/(field)/(institution)/(unknown)."
+      lines << "  Heading composition per education item:"
+      lines << "    - Degree + Field -> \"Degree in Field\" (localized connector)"
+      lines << "    - only Degree -> \"Degree\""
+      lines << "    - only Field -> \"Field\""
+      lines << "    - neither Degree nor Field -> omit the `###` education title line"
       educations.each_with_index do |edu, i|
         lines << "  [#{i + 1}]"
-        lines << "    Degree: #{edu.degree.presence || "(degree)"}"
-        lines << "    Field: #{edu.field_of_study}" if edu.field_of_study.present?
-        lines << "    Institution: #{edu.institution_name.presence || "(institution)"}"
+        lines << "    Degree: #{edu.degree.presence || "(not provided)"}"
+        lines << "    Field: #{edu.field_of_study.presence || "(not provided)"}"
+        lines << "    Institution: #{edu.institution_name.presence || "(not provided)"}"
         lines << "    From: #{format_date(edu.date_from, code)}"
         lines << "    To: #{edu.date_to.present? ? format_date(edu.date_to, code) : lex[:present]}"
       end
