@@ -55,7 +55,42 @@ class Resume < ApplicationRecord
     replace_resume_joins(:resume_skills, :skill_id, user, ids_raw, user.skills)
   end
 
+  def duplicate_for_user!(user:)
+    transaction do
+      copy = user.resumes.create!(
+        title: duplicated_title,
+        description: description,
+        role_id: role_id,
+        preferred_language: preferred_language,
+        compiled_markdown: compiled_markdown
+      )
+
+      copy_join_rows!(copy, :resume_work_experiences, :work_experience_id)
+      copy_join_rows!(copy, :resume_certifications, :certification_id)
+      copy_join_rows!(copy, :resume_educations, :education_id)
+      copy_join_rows!(copy, :resume_skills, :skill_id)
+
+      copy
+    end
+  end
+
   private
+
+  def duplicated_title
+    base = title.to_s.strip
+    return "Untitled (Copy)" if base.blank?
+
+    "#{base} (Copy)"
+  end
+
+  def copy_join_rows!(copy, join_assoc, fk_column)
+    send(join_assoc).order(:created_at, fk_column).find_each do |join_row|
+      copy.public_send(join_assoc).create!(
+        fk_column => join_row.public_send(fk_column),
+        user_id: copy.user_id
+      )
+    end
+  end
 
   def normalize_preferred_language_column
     self.preferred_language = Resume.normalize_preferred_language(preferred_language)
