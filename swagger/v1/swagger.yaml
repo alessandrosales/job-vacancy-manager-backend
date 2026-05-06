@@ -789,6 +789,60 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/resume_skill_sync_request"
+  "/api/v1/resumes/{resume_id}/compiled-export":
+    parameters:
+    - name: resume_id
+      in: path
+      format: uuid
+      description: Resume UUID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Downloads compiled markdown export (md, docx, pdf)
+      description: |
+        Streams an attachment generated from the persisted `compiled_markdown` field (no recompilation).
+        Query parameter `format` must be `md`, `docx`, or `pdf`.
+      tags:
+      - Resumes
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: format
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - md
+          - docx
+          - pdf
+      responses:
+        '200':
+          description: File attachment (`Content-Disposition` attachment)
+          content:
+            text/markdown:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: unauthorized
+        '404':
+          description: resume not found for current user
+        '422':
+          description: missing compiled markdown or invalid format
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/validation_errors"
   "/api/v1/resumes":
     get:
       summary: Lists resumes for the current user (paginated by default)

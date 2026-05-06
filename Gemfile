@@ -62,3 +62,9 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 end
+
+gem "kramdown", "~> 2.5"
+gem "caracal", "~> 1.4"
+gem "prawn", "~> 2.4"
+# Prawn pulls `matrix` at runtime; Ruby 3.3+ no longer bundles it as a default gem.
+gem "matrix"

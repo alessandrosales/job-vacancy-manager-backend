@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       post "resumes/pdf-import", to: "resumes/pdf_imports#create"
       post "resumes/description-suggestions", to: "resumes/description_suggestions#create"
       resources :resumes do
+        get "compiled-export", to: "resumes/compiled_exports#show"
         post "compile-markdown", to: "resumes/markdown_compilations#create"
         patch "work-experiences", to: "resume_work_experiences#update"
         patch "certifications", to: "resume_certifications#update"
