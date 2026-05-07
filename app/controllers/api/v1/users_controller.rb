@@ -60,11 +60,15 @@ module Api
         permitted = params.require(:user).permit(
           :name, :email, :password, :password_confirmation,
           :phone, :avatar_url, :bio, :age, :full_address, :relationship_status, :gender,
-          :preferred_language
+          :preferred_language,
+          :ai_token
         )
         permitted.delete(:password) if permitted[:password].blank?
         permitted.delete(:password_confirmation) if permitted[:password_confirmation].blank?
         permitted[:age] = nil if permitted.key?(:age) && permitted[:age].to_s.strip.empty?
+        if permitted.key?(:ai_token)
+          permitted[:ai_token] = permitted[:ai_token].to_s.strip.presence
+        end
         permitted
       end
     end

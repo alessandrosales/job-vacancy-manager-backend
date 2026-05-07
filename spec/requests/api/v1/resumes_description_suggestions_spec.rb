@@ -17,7 +17,7 @@ RSpec.describe "POST /api/v1/resumes/description-suggestions" do
     response_obj = Struct.new(:content).new("  Polished summary for the candidate.  ")
     chat_double = Object.new
     chat_double.define_singleton_method(:ask) { |_msg| response_obj }
-    allow(RubyLLM).to receive(:chat).and_return(chat_double)
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_return(chat_double)
   end
 
   it "returns 200 and description when title is present" do
@@ -50,8 +50,21 @@ RSpec.describe "POST /api/v1/resumes/description-suggestions" do
     expect(JSON.parse(response.body)["errors"]).to have_key("title")
   end
 
+  it "returns 422 when no OpenAI API key is available" do
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_call_original
+    allow(User::RubyLlmContext).to receive(:openai_api_key_for).and_return(nil)
+
+    post "/api/v1/resumes/description-suggestions",
+      params: { title: "T" },
+      headers: auth_headers.merge("Content-Type" => "application/json"),
+      as: :json
+
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(JSON.parse(response.body)["errors"]["ai_token"]).to be_present
+  end
+
   it "returns 422 when RubyLLM fails" do
-    allow(RubyLLM).to receive(:chat).and_raise(RubyLLM::Error.new("upstream"))
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_raise(RubyLLM::Error.new("upstream"))
 
     post "/api/v1/resumes/description-suggestions",
       params: { title: "T" },

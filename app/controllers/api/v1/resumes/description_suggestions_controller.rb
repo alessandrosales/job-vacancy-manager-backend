@@ -11,8 +11,14 @@ module Api
             return
           end
 
-          text = Resume::DescriptionGenerator.call(**attrs)
+          text = Resume::DescriptionGenerator.call(**attrs, user: current_user)
           render json: { description: text }, status: :ok
+        rescue User::RubyLlmContext::MissingApiKeyError
+          render json: {
+            errors: {
+              ai_token: [ "Add your OpenAI API key in My data, or configure OPENAI_API_KEY on the server." ]
+            }
+          }, status: :unprocessable_entity
         rescue Resume::DescriptionGenerator::Error => e
           render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity
         end

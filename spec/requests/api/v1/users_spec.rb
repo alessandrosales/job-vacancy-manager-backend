@@ -367,4 +367,34 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
     expect(data["relationship_status"]).to eq("single")
     expect(data["gender"]).to eq("female")
   end
+
+  it "stores and clears ai_token without returning the secret" do
+    user = User.create!(
+      name: "Ai Key User",
+      email: "ai-key@example.com",
+      password: "password12",
+      password_confirmation: "password12"
+    )
+    patch api_v1_user_path(user),
+      params: { user: { ai_token: "sk-user-test-key" } }.to_json,
+      headers: {
+        "Content-Type" => "application/json",
+        "Authorization" => "Bearer #{User::JwtIssuer.encode(user)}"
+      }
+    expect(response).to have_http_status(:ok)
+    data = JSON.parse(response.body)
+    expect(data["ai_token_configured"]).to eq(true)
+    expect(data).not_to have_key("ai_token")
+    expect(user.reload.ai_token).to eq("sk-user-test-key")
+
+    patch api_v1_user_path(user),
+      params: { user: { ai_token: "" } }.to_json,
+      headers: {
+        "Content-Type" => "application/json",
+        "Authorization" => "Bearer #{User::JwtIssuer.encode(user)}"
+      }
+    expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)["ai_token_configured"]).to eq(false)
+    expect(user.reload.ai_token).to be_nil
+  end
 end

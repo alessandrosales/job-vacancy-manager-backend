@@ -105,7 +105,7 @@ class Resume::MarkdownCompiler
       user_message = build_user_message(resume_with_associations)
       system_with_template = "#{SYSTEM_PROMPT}\n\n#{template_reference}"
 
-      chat = RubyLLM.chat(model: model)
+      chat = User::RubyLlmContext.openai_chat!(user: resume_with_associations.user, model: model)
       response = chat.ask("#{system_with_template}\n\n#{user_message}")
       text = response.content.to_s.strip
 

@@ -29,6 +29,12 @@ module Api
             preferred_language: params[:preferred_language]
           )
           render json: resume.as_api_json, status: :created
+        rescue User::RubyLlmContext::MissingApiKeyError
+          render json: {
+            errors: {
+              ai_token: [ "Add your OpenAI API key in My data, or configure OPENAI_API_KEY on the server." ]
+            }
+          }, status: :unprocessable_entity
         rescue Resume::PdfImporter::Error => e
           render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity
         rescue ActiveRecord::RecordNotFound

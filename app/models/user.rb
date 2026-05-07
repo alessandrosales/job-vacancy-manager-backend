@@ -69,7 +69,7 @@ class User < ApplicationRecord
         preferred_language
         created_at updated_at
       ]
-    )
+    ).merge("ai_token_configured" => ai_token.present?)
   end
 
   private

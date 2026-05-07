@@ -34,7 +34,7 @@ class Resume::PdfImporter
           tempfile.flush
           tempfile.rewind
           begin
-            extract_from_pdf_path(tempfile.path)
+            extract_from_pdf_path(tempfile.path, user: user)
           ensure
             tempfile.close!
           end
@@ -45,9 +45,9 @@ class Resume::PdfImporter
 
     private
 
-    def extract_from_pdf_path(path)
+    def extract_from_pdf_path(path, user:)
       model = ENV.fetch("RESUME_IMPORT_OPENAI_MODEL", "gpt-4.1-mini")
-      chat = RubyLLM.chat(model: model).with_schema(Resume::PdfExtractSchema)
+      chat = User::RubyLlmContext.openai_chat!(user: user, model: model).with_schema(Resume::PdfExtractSchema)
       response = chat.ask(EXTRACTION_PROMPT, with: path)
       normalize_payload(response.content)
     rescue RubyLLM::Error, Faraday::Error => e

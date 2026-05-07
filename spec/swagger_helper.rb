@@ -47,10 +47,14 @@ RSpec.configure do |config|
                 enum: %w[en pt_br es],
                 description: "UI / copy preference (not spoken languages list)"
               },
+              ai_token_configured: {
+                type: :boolean,
+                description: "Whether the account has an OpenAI API key stored (`ai_token`); the raw key is never returned"
+              },
               created_at: { type: :string, format: "date-time" },
               updated_at: { type: :string, format: "date-time" }
             },
-            required: %w[id name email preferred_language created_at updated_at]
+            required: %w[id name email preferred_language ai_token_configured created_at updated_at]
           },
           users_list: {
             type: :array,
@@ -97,7 +101,13 @@ RSpec.configure do |config|
                   full_address: { type: :string, nullable: true },
                   relationship_status: { type: :string, nullable: true },
                   gender: { type: :string, nullable: true },
-                  preferred_language: { type: :string, enum: %w[en pt_br es] }
+                  preferred_language: { type: :string, enum: %w[en pt_br es] },
+                  ai_token: {
+                    type: :string,
+                    writeOnly: true,
+                    nullable: true,
+                    description: "OpenAI API key for AI features; send empty string to clear. Omitted keys are left unchanged."
+                  }
                 }
               }
             },

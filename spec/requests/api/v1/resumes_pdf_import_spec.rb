@@ -29,7 +29,7 @@ RSpec.describe "POST /api/v1/resumes/pdf-import" do
     chat_double = Object.new
     chat_double.define_singleton_method(:with_schema) { |_schema| self }
     chat_double.define_singleton_method(:ask) { |_prompt, with: nil| response_double }
-    allow(RubyLLM).to receive(:chat).and_return(chat_double)
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_return(chat_double)
   end
 
   it "returns 201 and resume JSON when file and role_id are valid" do
@@ -78,8 +78,19 @@ RSpec.describe "POST /api/v1/resumes/pdf-import" do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "returns 422 when no OpenAI API key is available" do
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_call_original
+    allow(User::RubyLlmContext).to receive(:openai_api_key_for).and_return(nil)
+    pdf = Rack::Test::UploadedFile.new(StringIO.new("%PDF-1.4\n"), "application/pdf", original_filename: "cv.pdf")
+
+    post "/api/v1/resumes/pdf-import", params: { file: pdf, role_id: role.id }, headers: auth_headers
+
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(JSON.parse(response.body)["errors"]["ai_token"]).to be_present
+  end
+
   it "returns 422 when RubyLLM fails" do
-    allow(RubyLLM).to receive(:chat).and_raise(RubyLLM::Error.new("upstream"))
+    allow(User::RubyLlmContext).to receive(:openai_chat!).and_raise(RubyLLM::Error.new("upstream"))
     pdf = Rack::Test::UploadedFile.new(StringIO.new("%PDF-1.4\n"), "application/pdf", original_filename: "cv.pdf")
 
     post "/api/v1/resumes/pdf-import", params: { file: pdf, role_id: role.id }, headers: auth_headers

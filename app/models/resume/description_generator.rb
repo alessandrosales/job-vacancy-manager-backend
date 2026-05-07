@@ -22,7 +22,7 @@ class Resume::DescriptionGenerator
   TEXT
 
   class << self
-    def call(title:, role_name: nil, work_experience_summaries: [], certification_names: [],
+    def call(user:, title:, role_name: nil, work_experience_summaries: [], certification_names: [],
       education_summaries: [], skill_names: [], previous_description: "", preferred_language: nil)
       model = ENV.fetch(
         "RESUME_DESCRIPTION_AI_MODEL",
@@ -40,7 +40,7 @@ class Resume::DescriptionGenerator
         preferred_language: lang
       )
 
-      chat = RubyLLM.chat(model: model)
+      chat = User::RubyLlmContext.openai_chat!(user: user, model: model)
       response = chat.ask("#{SYSTEM}\n\n#{user_message}")
       text = response.content.to_s.strip
       raise Error, "Empty response from language model." if text.blank?
