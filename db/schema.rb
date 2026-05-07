@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_034000) do
   create_table "certifications", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date_from"
@@ -165,6 +165,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_120000) do
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.string "firebase_uid"
     t.text "full_address"
     t.string "gender"
     t.string "name", null: false
@@ -175,6 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_120000) do
     t.string "token"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["firebase_uid"], name: "index_users_on_firebase_uid", unique: true, where: "firebase_uid IS NOT NULL"
     t.index ["token"], name: "index_users_on_token", unique: true, where: "token IS NOT NULL"
   end
 

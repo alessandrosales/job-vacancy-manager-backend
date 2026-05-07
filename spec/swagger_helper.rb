@@ -117,6 +117,19 @@ RSpec.configure do |config|
             },
             required: %w[auth]
           },
+          auth_firebase_request: {
+            type: :object,
+            properties: {
+              auth: {
+                type: :object,
+                properties: {
+                  id_token: { type: :string, description: "Firebase ID token" }
+                },
+                required: %w[id_token]
+              }
+            },
+            required: %w[auth]
+          },
           auth_login_response: {
             type: :object,
             properties: {
