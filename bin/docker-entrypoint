@@ -13,7 +13,9 @@ case "${1:-}" in
 esac
 
 if [ "$prepare_db" = true ]; then
+  echo "[docker-entrypoint] Running db:prepare (postgres deve estar acessível em \$DATABASE_HOST:\$DATABASE_PORT)..."
   ./bin/rails db:prepare
+  echo "[docker-entrypoint] db:prepare finished; starting web server..."
 fi
 
 exec "$@"
