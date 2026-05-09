@@ -8,8 +8,8 @@
 # Postgres no mesmo servidor que o Docker (Linux): DATABASE_HOST=host.docker.internal
 # e o serviço backend usa extra_hosts abaixo. Se o banco está em outra máquina, use o hostname/IP dela.
 #
-# Backend pode demorar no primeiro boot (db:prepare + vários DBs em produção). O healthcheck tem start_period longo.
-# O frontend sobe quando o backend *inicia* (não espera healthy), para o `compose up` não ficar preso.
+# O frontend só espera o backend *iniciar* (service_started), não “healthy”.
+# Sem healthcheck no backend: evita marcar unhealthy enquanto /up ou DB oscilam; use Nginx/monitor externo para probes.
 #
 services:
   backend:
@@ -40,12 +40,6 @@ services:
       SKIP_DB_PREPARE: ${SKIP_DB_PREPARE:-false}
     volumes:
       - backend_storage:/rails/storage
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/up"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 300s
     command: ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
 
   frontend:
