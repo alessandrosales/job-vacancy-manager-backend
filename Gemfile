@@ -65,7 +65,7 @@ end
 
 gem "kramdown", "~> 2.5"
 gem "caracal", "~> 1.4"
-gem "prawn", "~> 2.4"
+gem "prawn", "~> 2.5"
 # Prawn pulls `matrix` at runtime; Ruby 3.3+ no longer bundles it as a default gem.
 gem "matrix"
 
