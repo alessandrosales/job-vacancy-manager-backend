@@ -14,6 +14,11 @@ module Api
             user: user.as_api_json
           }, status: :ok
         rescue User::FirebaseTokenVerifier::InvalidTokenError
+          Rails.logger.warn(
+            "[auth/firebase] token inválido ou não verificável — confira FIREBASE_PROJECT_ID no container " \
+              "(deve ser o ID do projeto no Firebase Console), rede HTTPS de saída para www.googleapis.com " \
+              "e se o front usa o mesmo projeto Firebase."
+          )
           head :unauthorized
         rescue ActionController::ParameterMissing
           head :unprocessable_entity
