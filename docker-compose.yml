@@ -1,43 +1,29 @@
-# Stack local/produção simples: PostgreSQL + API Rails + frontend (React Router).
-# Pré-requisito: repositório do frontend como pasta irmã deste backend (veja FRONTEND_BUILD_CONTEXT).
+# API Rails + frontend (React Router). PostgreSQL é externo (configure DATABASE_* no .env.docker).
+# Pré-requisito: repositório do frontend (FRONTEND_BUILD_CONTEXT).
 #
 # Uso:
 #   cp .env.docker.example .env.docker
-#   # edite .env.docker (RAILS_MASTER_KEY, Firebase para build do frontend, etc.)
 #   docker compose --env-file .env.docker up --build
 #
+# Postgres no mesmo servidor que o Docker (Linux): DATABASE_HOST=host.docker.internal
+# e o serviço backend usa extra_hosts abaixo. Se o banco está em outra máquina, use o hostname/IP dela.
+#
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-jobvacancy}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobvacancy}
-      POSTGRES_DB: ${POSTGRES_DB:-job_vacancy_manager_production}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB",
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   backend:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "${BACKEND_PORT:-3000}:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       RAILS_ENV: production
-      DATABASE_HOST: postgres
-      DATABASE_PORT: "5432"
-      DATABASE_USERNAME: ${POSTGRES_USER:-jobvacancy}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-jobvacancy}
-      DATABASE_NAME: ${POSTGRES_DB:-job_vacancy_manager_production}
+      DATABASE_HOST: ${DATABASE_HOST:-host.docker.internal}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-}
+      DATABASE_NAME: ${DATABASE_NAME:-job_vacancy_manager_production}
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:?defina RAILS_MASTER_KEY no .env.docker}
       RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
       PORT: "3000"
@@ -50,9 +36,6 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     volumes:
       - backend_storage:/rails/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/up"]
       interval: 15s
@@ -84,5 +67,4 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres_data:
   backend_storage:
