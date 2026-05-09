@@ -1,40 +1,40 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
-#
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem "sqlite3"
-#
+# PostgreSQL via variáveis de ambiente (ver `.env.example`).
+# Em desenvolvimento/teste, nomes de banco padrão são usados quando `DATABASE_NAME` está vazio.
+
 default: &default
-  adapter: sqlite3
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV["DATABASE_HOST"].presence || "localhost" %>
+  port: <%= ENV["DATABASE_PORT"].presence || "5432" %>
+  username: <%= ENV["DATABASE_USERNAME"].presence || ENV.fetch("USER", "postgres") %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
 
 development:
   <<: *default
-  database: storage/development.sqlite3
+  database: <%= ENV["DATABASE_NAME"].presence || "job_vacancy_manager_development" %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: storage/test.sqlite3
+  database: <%= ENV["DATABASE_NAME"].presence || "job_vacancy_manager_test" %>
 
-# Store production database in the storage/ directory, which by default
-# is mounted as a persistent Docker volume in config/deploy.yml.
+<% prod_db = ENV["DATABASE_NAME"].presence || "job_vacancy_manager_production" %>
 production:
   primary:
     <<: *default
-    database: storage/production.sqlite3
+    database: <%= prod_db %>
   cache:
     <<: *default
-    database: storage/production_cache.sqlite3
+    database: <%= ENV["DATABASE_CACHE_NAME"].presence || "#{prod_db}_cache" %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    database: storage/production_queue.sqlite3
+    database: <%= ENV["DATABASE_QUEUE_NAME"].presence || "#{prod_db}_queue" %>
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    database: storage/production_cable.sqlite3
+    database: <%= ENV["DATABASE_CABLE_NAME"].presence || "#{prod_db}_cable" %>
     migrations_paths: db/cable_migrate

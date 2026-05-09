@@ -74,7 +74,7 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
 
-# Use a persistent storage volume for sqlite database files and local Active Storage files.
+# Volume persistente para Active Storage e outros arquivos em `storage/` (PostgreSQL fica no servidor ou accessory).
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
   - "job_vacancy_manager_backend_storage:/rails/storage"
