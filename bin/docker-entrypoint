@@ -1,8 +1,19 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+# When starting the web server (Puma direto ou via Thruster), garantir schema/migrations.
+prepare_db=false
+case "${1:-}" in
+  ./bin/rails)
+    [ "${2:-}" = "server" ] && prepare_db=true
+    ;;
+  ./bin/thrust)
+    prepare_db=true
+    ;;
+esac
+
+if [ "$prepare_db" = true ]; then
   ./bin/rails db:prepare
 fi
 
-exec "${@}"
+exec "$@"

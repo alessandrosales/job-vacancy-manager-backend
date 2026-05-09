@@ -1,0 +1,88 @@
+# Stack local/produção simples: PostgreSQL + API Rails + frontend (React Router).
+# Pré-requisito: repositório do frontend como pasta irmã deste backend (veja FRONTEND_BUILD_CONTEXT).
+#
+# Uso:
+#   cp .env.docker.example .env.docker
+#   # edite .env.docker (RAILS_MASTER_KEY, Firebase para build do frontend, etc.)
+#   docker compose --env-file .env.docker up --build
+#
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jobvacancy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobvacancy}
+      POSTGRES_DB: ${POSTGRES_DB:-job_vacancy_manager_production}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: ${POSTGRES_USER:-jobvacancy}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-jobvacancy}
+      DATABASE_NAME: ${POSTGRES_DB:-job_vacancy_manager_production}
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:?defina RAILS_MASTER_KEY no .env.docker}
+      RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+      PORT: "3000"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-localhost}
+      MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-3000}
+      MAILER_DEFAULT_URL_PROTOCOL: ${MAILER_DEFAULT_URL_PROTOCOL:-http}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - backend_storage:/rails/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    command: ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+
+  frontend:
+    build:
+      context: ${FRONTEND_BUILD_CONTEXT:-../job-vacancy-manager-layout}
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY:?defina VITE_FIREBASE_API_KEY no .env.docker}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN:?defina VITE_FIREBASE_AUTH_DOMAIN no .env.docker}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID:?defina VITE_FIREBASE_PROJECT_ID no .env.docker}
+        VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET:?defina VITE_FIREBASE_STORAGE_BUCKET no .env.docker}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID:?defina VITE_FIREBASE_MESSAGING_SENDER_ID no .env.docker}
+        VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID:?defina VITE_FIREBASE_APP_ID no .env.docker}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      NODE_ENV: production
+      PORT: "5173"
+      HOST: "0.0.0.0"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  backend_storage:
