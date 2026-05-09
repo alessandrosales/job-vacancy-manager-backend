@@ -1,4 +1,4 @@
-# Job Vacancy Manager — Backend
+# Hireest — Backend
 
 REST API in **Ruby on Rails 8.1** (**API-only** mode) to manage **job opportunities**, **resumes**, **companies**, **roles**, **skills**, **languages**, **work experience**, and profile data — with **per-user multi-tenancy** (every domain record belongs to the authenticated user).
 

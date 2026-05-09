@@ -112,9 +112,9 @@ RSpec.describe "API V1 — Auth / password reset", openapi_spec: "v1/swagger.yam
           expect(ActionMailer::Base.deliveries.size).to eq(1)
           notice = ActionMailer::Base.deliveries.last
           expect(notice.to).to eq([ "change-auth@example.com" ])
-          expect(notice.subject).to eq("Your password was changed — Job Vacancy Manager")
+          expect(notice.subject).to eq("Your password was changed — Hireest")
           body_text = notice.text_part&.decoded || notice.body.raw_source
-          expect(body_text).to include("password for your Job Vacancy Manager account")
+          expect(body_text).to include("password for your Hireest account")
         end
       end
 

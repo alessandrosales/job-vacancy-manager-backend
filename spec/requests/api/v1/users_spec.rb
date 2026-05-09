@@ -331,7 +331,7 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
     expect(ActionMailer::Base.deliveries.size).to eq(1)
     mail = ActionMailer::Base.deliveries.last
     expect(mail.to).to eq([ "pwd-mail@example.com" ])
-    expect(mail.subject).to eq("Your password was changed — Job Vacancy Manager")
+    expect(mail.subject).to eq("Your password was changed — Hireest")
   end
 
   it "persists optional profile fields on PATCH" do

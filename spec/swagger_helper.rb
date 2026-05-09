@@ -9,7 +9,7 @@ RSpec.configure do |config|
     "v1/swagger.yaml" => {
       openapi: "3.0.1",
       info: {
-        title: "Job Vacancy Manager API",
+        title: "Hireest API",
         version: "1.0.0",
         description: "REST API under `/api/v1`. JSON keys use snake_case. Primary keys are UUIDs. Protected routes expect `Authorization: Bearer <jwt>`."
       },
