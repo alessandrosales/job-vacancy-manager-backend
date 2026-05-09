@@ -22,6 +22,6 @@ class ResumeCertification < ApplicationRecord
 
     return if res.user_id == user_id && cert.user_id == user_id
 
-    errors.add(:base, "resume and certification must belong to the same user as this link")
+    errors.add(:base, :ownership_mismatch)
   end
 end

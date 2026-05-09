@@ -1,6 +1,8 @@
 module Api
   module V1
     class BaseController < ApplicationController
+      include SetsApiLocale
+
       rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
       rescue_from ActionDispatch::Http::Parameters::ParseError, with: :invalid_json_body
 
@@ -13,10 +15,7 @@ module Api
       def invalid_json_body(_exception)
         render json: {
           errors: {
-            base: [
-              "Invalid JSON body. Send Content-Type: application/json with well-formed JSON " \
-              "(e.g. {\"auth\":{\"email\":\"you@example.com\"}} for recover password)."
-            ]
+            base: [ I18n.t("api.errors.invalid_json_body") ]
           }
         }, status: :bad_request
       end

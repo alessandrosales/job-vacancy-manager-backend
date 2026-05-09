@@ -12,11 +12,11 @@ module Api
         rescue User::RubyLlmContext::MissingApiKeyError
           render json: {
             errors: {
-              ai_token: [ "Add your OpenAI API key in My data, or configure OPENAI_API_KEY on the server." ]
+              ai_token: [ I18n.t("api.errors.resume.ai_token_missing") ]
             }
           }, status: :unprocessable_entity
         rescue Resume::MarkdownCompiler::Error => e
-          render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity
+          render json: { errors: { base: [ e.translate ] } }, status: :unprocessable_entity
         end
       end
     end

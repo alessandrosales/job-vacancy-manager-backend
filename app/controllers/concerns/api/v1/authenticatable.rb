@@ -6,7 +6,8 @@ module Api
       extend ActiveSupport::Concern
 
       included do
-        before_action :authenticate_request!
+        # Runs before sibling before_actions such as locale resolution → Current.user present.
+        prepend_before_action :authenticate_request!
         after_action :clear_current_user
       end
 

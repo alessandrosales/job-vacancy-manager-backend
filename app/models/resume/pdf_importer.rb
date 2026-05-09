@@ -3,7 +3,7 @@
 require "set"
 
 class Resume::PdfImporter
-  class Error < StandardError; end
+  class Error < ApiTranslatableError; end
 
   EXTRACTION_PROMPT = <<~PROMPT.squish
     You are parsing a job resume PDF. Extract only information explicitly present in the document.
@@ -52,7 +52,7 @@ class Resume::PdfImporter
       normalize_payload(response.content)
     rescue RubyLLM::Error, Faraday::Error => e
       Rails.logger.error("[Resume::PdfImporter] extraction failed: #{e.class}: #{e.message}")
-      raise Error, "Could not extract resume data from the PDF."
+      raise Error.new("api.errors.resume.pdf.extraction_failed")
     end
 
     def normalize_payload(content)
@@ -63,11 +63,11 @@ class Resume::PdfImporter
         when String
           JSON.parse(content)
         else
-          raise Error, "Unexpected response from language model."
+          raise Error.new("api.errors.resume.pdf.unexpected_model_response")
         end
       hash.deep_stringify_keys
     rescue JSON::ParserError
-      raise Error, "Unexpected response from language model."
+      raise Error.new("api.errors.resume.pdf.unexpected_model_response")
     end
 
     def persist_from_payload!(user, role_id, payload, preferred_language_raw)
@@ -106,16 +106,16 @@ class Resume::PdfImporter
         )
 
         unless resume.sync_work_experience_links!(user, work_experience_ids)
-          raise Error, "Failed to link work experiences to the resume."
+          raise Error.new("api.errors.resume.pdf.link_work_experiences_failed")
         end
         unless resume.sync_certification_links!(user, certification_ids)
-          raise Error, "Failed to link certifications to the resume."
+          raise Error.new("api.errors.resume.pdf.link_certifications_failed")
         end
         unless resume.sync_education_links!(user, education_ids)
-          raise Error, "Failed to link educations to the resume."
+          raise Error.new("api.errors.resume.pdf.link_educations_failed")
         end
         unless resume.sync_skill_links!(user, skill_ids)
-          raise Error, "Failed to link skills to the resume."
+          raise Error.new("api.errors.resume.pdf.link_skills_failed")
         end
 
         resume.reload
@@ -177,7 +177,7 @@ class Resume::PdfImporter
       return if combined.sort == work_experience.skill_ids.sort
 
       unless work_experience.sync_skill_links!(user, combined)
-        raise Error, "Failed to link skills to work experience."
+        raise Error.new("api.errors.resume.pdf.link_skills_work_experience_failed")
       end
     end
 

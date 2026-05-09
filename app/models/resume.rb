@@ -122,6 +122,6 @@ class Resume < ApplicationRecord
   def role_owned_by_user
     return if role_id.blank? || user_id.blank?
 
-    errors.add(:role_id, "is invalid") unless Role.exists?(id: role_id, user_id: user_id)
+    errors.add(:role_id, :invalid) unless Role.exists?(id: role_id, user_id: user_id)
   end
 end

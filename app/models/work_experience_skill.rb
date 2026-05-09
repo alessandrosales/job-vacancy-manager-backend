@@ -22,6 +22,6 @@ class WorkExperienceSkill < ApplicationRecord
 
     return if we.user_id == user_id && sk.user_id == user_id
 
-    errors.add(:base, "skill and work_experience must belong to the same user as this link")
+    errors.add(:base, :ownership_mismatch)
   end
 end

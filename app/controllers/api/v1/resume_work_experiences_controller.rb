@@ -10,7 +10,7 @@ module Api
         unless @resume.sync_work_experience_links!(current_user, ids)
           render json: {
             errors: {
-              work_experience_ids: [ "must reference only work experiences owned by the current user" ]
+              work_experience_ids: [ I18n.t("api.errors.join_tables.work_experience_ids_must_be_owned") ]
             }
           }, status: :unprocessable_entity
           return

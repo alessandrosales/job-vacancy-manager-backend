@@ -15,7 +15,7 @@ module Api
             disposition: "attachment"
           )
         rescue Resume::CompiledExport::Error => e
-          render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity
+          render json: { errors: { base: [ e.translate ] } }, status: :unprocessable_entity
         end
 
         private

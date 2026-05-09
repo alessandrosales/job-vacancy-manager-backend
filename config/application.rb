@@ -29,6 +29,9 @@ module JobVacancyManagerBackend
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    config.i18n.default_locale = :en
+    config.i18n.available_locales = [ :en, :es, :"pt-BR" ]
+
     config.action_dispatch.default_headers.merge!(
       "X-Frame-Options" => "DENY",
       "X-Content-Type-Options" => "nosniff",

@@ -1,0 +1,44 @@
+en:
+  activerecord:
+    errors:
+      models:
+        resume_education:
+          attributes:
+            base:
+              ownership_mismatch: "The résumé and linked education must belong to the same user."
+        resume_certification:
+          attributes:
+            base:
+              ownership_mismatch: "The résumé and linked certification must belong to the same user."
+        resume_skill:
+          attributes:
+            base:
+              ownership_mismatch: "The résumé and linked skill must belong to the same user."
+        resume_work_experience:
+          attributes:
+            base:
+              ownership_mismatch: "The résumé and linked work experience must belong to the same user."
+        work_experience_skill:
+          attributes:
+            base:
+              ownership_mismatch: "The skill and work experience must belong to the same user."
+        education:
+          attributes:
+            date_to:
+              invalid_date_range: "Must be on or after the start date."
+        certification:
+          attributes:
+            date_to:
+              invalid_date_range: "Must be on or after the start date."
+        opportunity:
+          attributes:
+            company_id:
+              invalid: "does not exist or is not available for this account."
+            role_id:
+              invalid: "does not exist or is not available for this account."
+            status_id:
+              invalid: "does not exist or is not available for this account."
+        resume:
+          attributes:
+            role_id:
+              invalid: "does not exist or is not available for this account."

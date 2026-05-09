@@ -9,7 +9,7 @@ module Api
         ids = normalize_id_list(sync_params[:skill_ids])
         unless @resume.sync_skill_links!(current_user, ids)
           render json: {
-            errors: { skill_ids: [ "must reference only skills owned by the current user" ] }
+            errors: { skill_ids: [ I18n.t("api.errors.join_tables.skill_ids_must_be_owned") ] }
           }, status: :unprocessable_entity
           return
         end

@@ -39,6 +39,6 @@ class Opportunity < ApplicationRecord
   def validate_record_owned(model, fk_value, error_key, uid)
     return if fk_value.blank?
 
-    errors.add(error_key, "is invalid") unless model.exists?(id: fk_value, user_id: uid)
+    errors.add(error_key, :invalid) unless model.exists?(id: fk_value, user_id: uid)
   end
 end

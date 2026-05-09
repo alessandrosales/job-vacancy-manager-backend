@@ -1,0 +1,37 @@
+"pt-BR":
+  api:
+    errors:
+      invalid_json_body: "Corpo JSON inválido. Envie Content-Type: application/json com JSON bem-formado (por exemplo, {\"auth\":{\"email\":\"you@example.com\"}} para recuperar a senha)."
+      auth:
+        reset_token_invalid: "Token de redefinição inválido ou expirado."
+      join_tables:
+        skill_ids_must_be_owned: "As habilidades precisam pertencer ao usuário atual."
+        certification_ids_must_be_owned: "As certificações precisam pertencer ao usuário atual."
+        education_ids_must_be_owned: "As formações precisam pertencer ao usuário atual."
+        work_experience_ids_must_be_owned: "As experiências profissionais precisam pertencer ao usuário atual."
+      resume:
+        ai_token_missing: "Adicione sua chave da API da OpenAI em Meus dados, ou configure OPENAI_API_KEY no servidor."
+        pdf:
+          multipart_required: "É necessário enviar o arquivo em multipart/form-data."
+          must_be_pdf: "O arquivo precisa ser um PDF."
+          role_id_blank: "O papel (role) não pode ficar em branco."
+          role_invalid: "Papel (role) não encontrado."
+          extraction_failed: "Não foi possível extrair os dados do currículo do PDF."
+          unexpected_model_response: "Resposta inesperada do modelo de linguagem."
+          link_work_experiences_failed: "Não foi possível vincular as experiências profissionais ao currículo."
+          link_certifications_failed: "Não foi possível vincular as certificações ao currículo."
+          link_educations_failed: "Não foi possível vincular as formações ao currículo."
+          link_skills_failed: "Não foi possível vincular as habilidades ao currículo."
+          link_skills_work_experience_failed: "Não foi possível vincular as habilidades à experiência profissional."
+        markdown:
+          empty_llm_response: "Resposta vazia do modelo de linguagem."
+          generation_failed: "Não foi possível gerar o currículo agora."
+        description:
+          empty_llm_response: "Resposta vazia do modelo de linguagem."
+          generation_failed: "Não foi possível gerar a descrição agora."
+        export:
+          invalid_format: "Formato de exportação inválido."
+          compiled_markdown_missing: "O Markdown compilado ainda não está disponível."
+          pdf_generation_failed: "Não foi possível gerar o PDF a partir do Markdown compilado."
+          docx_generation_failed: "Não foi possível gerar o DOCX a partir do Markdown compilado."
+          docx_invalid_model: "Não foi possível gerar o DOCX a partir do Markdown compilado."

@@ -3,7 +3,7 @@
 # Generates a professional resume description from structured context (title, role, linked
 # records) using RubyLLM. Invoked by the API for the "Generate with AI" flow on the resume form.
 class Resume::DescriptionGenerator
-  class Error < StandardError; end
+  class Error < ApiTranslatableError; end
 
   SYSTEM = <<~TEXT.squish
     You improve resume profile descriptions for a job search tracker.
@@ -43,12 +43,12 @@ class Resume::DescriptionGenerator
       chat = User::RubyLlmContext.openai_chat!(user: user, model: model)
       response = chat.ask("#{SYSTEM}\n\n#{user_message}")
       text = response.content.to_s.strip
-      raise Error, "Empty response from language model." if text.blank?
+      raise Error.new("api.errors.resume.description.empty_llm_response") if text.blank?
 
       text
     rescue RubyLLM::Error, Faraday::Error => e
       Rails.logger.error("[Resume::DescriptionGenerator] failed: #{e.class}: #{e.message}")
-      raise Error, "Could not generate a description right now."
+      raise Error.new("api.errors.resume.description.generation_failed")
     end
 
     private

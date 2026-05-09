@@ -2,7 +2,7 @@
 
 # Exporta o texto já persistido em +compiled_markdown+ como arquivo (sem recompilar).
 class Resume::CompiledExport
-  class Error < StandardError; end
+  class Error < ApiTranslatableError; end
 
   FORMATS = %w[md docx pdf].freeze
 
@@ -45,11 +45,11 @@ class Resume::CompiledExport
 
   def validate!
     unless FORMATS.include?(@format)
-      raise Error, "Export format is invalid."
+      raise Error.new("api.errors.resume.export.invalid_format")
     end
 
     if @resume.compiled_markdown.blank?
-      raise Error, "Compiled markdown is not available yet."
+      raise Error.new("api.errors.resume.export.compiled_markdown_missing")
     end
   end
 
@@ -79,7 +79,7 @@ class Resume::CompiledExport
     pdf.render
   rescue StandardError => e
     Rails.logger.error("[Resume::CompiledExport] PDF failed: #{e.class}: #{e.message}")
-    raise Error, "Could not generate PDF from compiled markdown."
+    raise Error.new("api.errors.resume.export.pdf_generation_failed")
   end
 
   def render_docx_bytes
@@ -87,9 +87,10 @@ class Resume::CompiledExport
       Resume::CompiledExport::DocxRenderer.new(docx).render(@resume.compiled_markdown)
     end
   rescue Caracal::Errors::InvalidModelError => e
-    raise Error, e.message
+    Rails.logger.warn("[Resume::CompiledExport] DOCX invalid model: #{e.class}: #{e.message}")
+    raise Error.new("api.errors.resume.export.docx_invalid_model")
   rescue StandardError => e
     Rails.logger.error("[Resume::CompiledExport] DOCX failed: #{e.class}: #{e.message}")
-    raise Error, "Could not generate DOCX from compiled markdown."
+    raise Error.new("api.errors.resume.export.docx_generation_failed")
   end
 end

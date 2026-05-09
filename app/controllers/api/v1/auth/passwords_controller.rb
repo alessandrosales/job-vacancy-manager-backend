@@ -19,7 +19,7 @@ module Api
           user = User.find_by_token_for(:password_reset, attrs[:reset_token].to_s)
           if user.nil?
             render json: {
-              errors: { reset_token: [ "invalid or expired token" ] }
+              errors: { reset_token: [ I18n.t("api.errors.auth.reset_token_invalid") ] }
             }, status: :unprocessable_entity
             return
           end

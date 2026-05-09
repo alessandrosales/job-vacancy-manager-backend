@@ -10,7 +10,7 @@ module Api
         unless @resume.sync_certification_links!(current_user, ids)
           render json: {
             errors: {
-              certification_ids: [ "must reference only certifications owned by the current user" ]
+              certification_ids: [ I18n.t("api.errors.join_tables.certification_ids_must_be_owned") ]
             }
           }, status: :unprocessable_entity
           return

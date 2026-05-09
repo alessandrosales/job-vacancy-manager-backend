@@ -1,0 +1,37 @@
+es:
+  api:
+    errors:
+      invalid_json_body: "Cuerpo JSON no válido. Envía Content-Type: application/json con JSON bien formado (por ejemplo, {\"auth\":{\"email\":\"you@example.com\"}} para recuperar la contraseña)."
+      auth:
+        reset_token_invalid: "Token de restablecimiento inválido o caducado."
+      join_tables:
+        skill_ids_must_be_owned: "Las habilidades deben pertenecer al usuario actual."
+        certification_ids_must_be_owned: "Las certificaciones deben pertenecer al usuario actual."
+        education_ids_must_be_owned: "La formación académica debe pertenecer al usuario actual."
+        work_experience_ids_must_be_owned: "Las experiencias laborales deben pertenecer al usuario actual."
+      resume:
+        ai_token_missing: "Añade tu clave API de OpenAI en Mis datos, o configura OPENAI_API_KEY en el servidor."
+        pdf:
+          multipart_required: "Debe ser una carga de archivo multipart."
+          must_be_pdf: "Debe ser un archivo PDF."
+          role_id_blank: "El rol no puede estar en blanco."
+          role_invalid: "Rol no encontrado."
+          extraction_failed: "No se pudieron extraer los datos del currículum del PDF."
+          unexpected_model_response: "Respuesta inesperada del modelo de lenguaje."
+          link_work_experiences_failed: "No se pudieron vincular las experiencias laborales al currículum."
+          link_certifications_failed: "No se pudieron vincular las certificaciones al currículum."
+          link_educations_failed: "No se pudo vincular la formación al currículum."
+          link_skills_failed: "No se pudieron vincular las habilidades al currículum."
+          link_skills_work_experience_failed: "No se pudieron vincular las habilidades a la experiencia laboral."
+        markdown:
+          empty_llm_response: "Respuesta vacía del modelo de lenguaje."
+          generation_failed: "No se pudo generar el currículum en este momento."
+        description:
+          empty_llm_response: "Respuesta vacía del modelo de lenguaje."
+          generation_failed: "No se pudo generar la descripción en este momento."
+        export:
+          invalid_format: "El formato de exportación no es válido."
+          compiled_markdown_missing: "El Markdown compilado aún no está disponible."
+          pdf_generation_failed: "No se pudo generar el PDF a partir del Markdown compilado."
+          docx_generation_failed: "No se pudo generar el DOCX a partir del Markdown compilado."
+          docx_invalid_model: "No se pudo generar el DOCX a partir del Markdown compilado."

@@ -10,7 +10,7 @@ module Api
         unless @resume.sync_education_links!(current_user, ids)
           render json: {
             errors: {
-              education_ids: [ "must reference only educations owned by the current user" ]
+              education_ids: [ I18n.t("api.errors.join_tables.education_ids_must_be_owned") ]
             }
           }, status: :unprocessable_entity
           return

@@ -8,7 +8,7 @@
 #   resume = Resume::MarkdownCompiler.call(resume: resume)
 #   resume.compiled_markdown  # => "# Jane Doe\n\n..."
 class Resume::MarkdownCompiler
-  class Error < StandardError; end
+  class Error < ApiTranslatableError; end
 
   TEMPLATE_PATH = Rails.root.join("app/models/resume/templates/ats_template.md").freeze
 
@@ -109,7 +109,7 @@ class Resume::MarkdownCompiler
       response = chat.ask("#{system_with_template}\n\n#{user_message}")
       text = response.content.to_s.strip
 
-      raise Error, "Empty response from language model." if text.blank?
+      raise Error.new("api.errors.resume.markdown.empty_llm_response") if text.blank?
 
       text = enforce_skills_section!(text, resume_with_associations, lex)
 
@@ -117,7 +117,7 @@ class Resume::MarkdownCompiler
       resume
     rescue RubyLLM::Error, Faraday::Error => e
       Rails.logger.error("[Resume::MarkdownCompiler] failed: #{e.class}: #{e.message}")
-      raise Error, "Could not generate the resume right now."
+      raise Error.new("api.errors.resume.markdown.generation_failed")
     end
 
     private

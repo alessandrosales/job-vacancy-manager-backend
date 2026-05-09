@@ -20,6 +20,6 @@ class Education < ApplicationRecord
   def date_range_consistent
     return if date_from.blank? || date_to.blank?
 
-    errors.add(:date_to, "must be on or after date_from") if date_to < date_from
+    errors.add(:date_to, :invalid_date_range) if date_to < date_from
   end
 end

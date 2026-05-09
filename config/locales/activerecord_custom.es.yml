@@ -1,0 +1,44 @@
+es:
+  activerecord:
+    errors:
+      models:
+        resume_education:
+          attributes:
+            base:
+              ownership_mismatch: "El currículum y la formación vinculados deben pertenecer al mismo usuario."
+        resume_certification:
+          attributes:
+            base:
+              ownership_mismatch: "El currículum y la certificación vinculados deben pertenecer al mismo usuario."
+        resume_skill:
+          attributes:
+            base:
+              ownership_mismatch: "El currículum y la habilidad vinculados deben pertenecer al mismo usuario."
+        resume_work_experience:
+          attributes:
+            base:
+              ownership_mismatch: "El currículum y la experiencia laboral vinculados deben pertenecer al mismo usuario."
+        work_experience_skill:
+          attributes:
+            base:
+              ownership_mismatch: "La habilidad y la experiencia laboral deben pertenecer al mismo usuario."
+        education:
+          attributes:
+            date_to:
+              invalid_date_range: "Debe ser igual o posterior a la fecha de inicio."
+        certification:
+          attributes:
+            date_to:
+              invalid_date_range: "Debe ser igual o posterior a la fecha de inicio."
+        opportunity:
+          attributes:
+            company_id:
+              invalid: "no existe o no está disponible para esta cuenta."
+            role_id:
+              invalid: "no existe o no está disponible para esta cuenta."
+            status_id:
+              invalid: "no existe o no está disponible para esta cuenta."
+        resume:
+          attributes:
+            role_id:
+              invalid: "no existe o no está disponible para esta cuenta."

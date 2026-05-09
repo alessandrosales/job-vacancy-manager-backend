@@ -7,7 +7,7 @@ module Api
         def create
           attrs = suggestion_params
           if attrs[:title].to_s.strip.blank?
-            render json: { errors: { title: [ "can't be blank" ] } }, status: :unprocessable_entity
+            render json: { errors: { title: [ I18n.t("errors.messages.blank") ] } }, status: :unprocessable_entity
             return
           end
 
@@ -16,11 +16,11 @@ module Api
         rescue User::RubyLlmContext::MissingApiKeyError
           render json: {
             errors: {
-              ai_token: [ "Add your OpenAI API key in My data, or configure OPENAI_API_KEY on the server." ]
+              ai_token: [ I18n.t("api.errors.resume.ai_token_missing") ]
             }
           }, status: :unprocessable_entity
         rescue Resume::DescriptionGenerator::Error => e
-          render json: { errors: { base: [ e.message ] } }, status: :unprocessable_entity
+          render json: { errors: { base: [ e.translate ] } }, status: :unprocessable_entity
         end
 
         private

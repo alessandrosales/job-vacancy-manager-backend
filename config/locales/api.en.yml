@@ -1,0 +1,37 @@
+en:
+  api:
+    errors:
+      invalid_json_body: "Invalid JSON body. Send Content-Type: application/json with well-formed JSON (for example, {\"auth\":{\"email\":\"you@example.com\"}} for password recovery)."
+      auth:
+        reset_token_invalid: "Invalid or expired reset token."
+      join_tables:
+        skill_ids_must_be_owned: "Skills must belong to the current user."
+        certification_ids_must_be_owned: "Certifications must belong to the current user."
+        education_ids_must_be_owned: "Educations must belong to the current user."
+        work_experience_ids_must_be_owned: "Work experiences must belong to the current user."
+      resume:
+        ai_token_missing: "Add your OpenAI API key under My data, or configure OPENAI_API_KEY on the server."
+        pdf:
+          multipart_required: "Must be a multipart file upload."
+          must_be_pdf: "Must be a PDF file."
+          role_id_blank: "Role can't be blank."
+          role_invalid: "Role not found."
+          extraction_failed: "Could not extract resume data from the PDF."
+          unexpected_model_response: "Unexpected response from language model."
+          link_work_experiences_failed: "Failed to link work experiences to the resume."
+          link_certifications_failed: "Failed to link certifications to the resume."
+          link_educations_failed: "Failed to link educations to the resume."
+          link_skills_failed: "Failed to link skills to the resume."
+          link_skills_work_experience_failed: "Failed to link skills to work experience."
+        markdown:
+          empty_llm_response: "Empty response from language model."
+          generation_failed: "Could not compile the résumé right now."
+        description:
+          empty_llm_response: "Empty response from language model."
+          generation_failed: "Could not generate a description right now."
+        export:
+          invalid_format: "Export format is invalid."
+          compiled_markdown_missing: "Compiled markdown is not available yet."
+          pdf_generation_failed: "Could not generate PDF from compiled markdown."
+          docx_generation_failed: "Could not generate DOCX from compiled markdown."
+          docx_invalid_model: "Could not generate DOCX from compiled markdown."
