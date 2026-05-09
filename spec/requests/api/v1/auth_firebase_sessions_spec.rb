@@ -35,10 +35,12 @@ RSpec.describe "API V1 — Auth / firebase", openapi_spec: "v1/swagger.yaml" do
           data = JSON.parse(response.body)
           expect(data["token"]).to be_present
           expect(data["user"]["email"]).to eq("firebase-user@example.com")
+          expect(data["user"]["avatar_url"]).to be_nil
 
           user = User.find_by(email: "firebase-user@example.com")
           expect(user).to be_present
           expect(user.firebase_uid).to eq("firebase-uid-123")
+          expect(user.avatar_url).to be_nil
         end
       end
 

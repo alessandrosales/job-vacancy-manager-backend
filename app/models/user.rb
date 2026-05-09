@@ -40,15 +40,14 @@ class User < ApplicationRecord
       firebase_uid = claims.fetch("sub").to_s
       email = claims.fetch("email").to_s.strip.downcase
       name = claims["name"].presence || email.split("@").first
-      avatar_url = claims["picture"].presence
 
       user = find_by(firebase_uid: firebase_uid) || find_by(email: email) || User.new
 
+      # Não importar `picture` do token Firebase: evita gravar URL externa e request da imagem no pós-login.
       user.assign_attributes(
         firebase_uid: firebase_uid,
         email: email,
-        name: name,
-        avatar_url: user.avatar_url.presence || avatar_url
+        name: name
       )
 
       if user.password_digest.blank?
