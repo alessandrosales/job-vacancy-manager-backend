@@ -8,6 +8,9 @@
 # Postgres no mesmo servidor que o Docker (Linux): DATABASE_HOST=host.docker.internal
 # e o serviço backend usa extra_hosts abaixo. Se o banco está em outra máquina, use o hostname/IP dela.
 #
+# Backend pode demorar no primeiro boot (db:prepare + vários DBs em produção). O healthcheck tem start_period longo.
+# O frontend sobe quando o backend *inicia* (não espera healthy), para o `compose up` não ficar preso.
+#
 services:
   backend:
     build:
@@ -34,14 +37,15 @@ services:
       MAILER_DEFAULT_URL_PROTOCOL: ${MAILER_DEFAULT_URL_PROTOCOL:-http}
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SKIP_DB_PREPARE: ${SKIP_DB_PREPARE:-false}
     volumes:
       - backend_storage:/rails/storage
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/up"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 6
-      start_period: 60s
+      retries: 12
+      start_period: 300s
     command: ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
 
   frontend:
@@ -64,7 +68,7 @@ services:
       HOST: "0.0.0.0"
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_started
 
 volumes:
   backend_storage:
