@@ -8,8 +8,7 @@
 # Postgres no mesmo servidor que o Docker (Linux): DATABASE_HOST=host.docker.internal
 # e o serviço backend usa extra_hosts abaixo. Se o banco está em outra máquina, use o hostname/IP dela.
 #
-# O frontend só espera o backend *iniciar* (service_started), não “healthy”.
-# Sem healthcheck no backend: evita marcar unhealthy enquanto /up ou DB oscilam; use Nginx/monitor externo para probes.
+# Frontend e backend sobem em paralelo (sem depends_on): se o Rails falhar, o site em :5173 ainda sobe para você não ficar sem proxy.
 #
 services:
   backend:
@@ -60,9 +59,6 @@ services:
       NODE_ENV: production
       PORT: "5173"
       HOST: "0.0.0.0"
-    depends_on:
-      backend:
-        condition: service_started
 
 volumes:
   backend_storage:
