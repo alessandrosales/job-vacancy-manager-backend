@@ -19,9 +19,9 @@ on:
       branch:
         description: Branch to deploy (both repos)
         required: true
-        default: main
+        default: master
   push:
-    branches: [main]
+    branches: [master]
 
 permissions:
   contents: read
@@ -55,7 +55,6 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          script_stop: true
           command_timeout: 45m
           envs: BACKEND_PATH,FRONTEND_PATH,DEPLOY_BRANCH
           script: |
