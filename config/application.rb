@@ -6,6 +6,9 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Carrega antes das environment files (production.rb usa MailerEnv em default_url_options).
+require_relative "mailer_env"
+
 module JobVacancyManagerBackend
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

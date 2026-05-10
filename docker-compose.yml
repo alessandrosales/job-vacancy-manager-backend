@@ -31,10 +31,13 @@ services:
       PORT: "3000"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      # Remetente: prefer SMTP_DEFAULT_FROM; MAILER_DEFAULT_FROM permanece para compat.
+      SMTP_DEFAULT_FROM: ${SMTP_DEFAULT_FROM:-}
       MAILER_DEFAULT_FROM: ${MAILER_DEFAULT_FROM:-}
-      MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-localhost}
-      MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-3000}
-      MAILER_DEFAULT_URL_PROTOCOL: ${MAILER_DEFAULT_URL_PROTOCOL:-http}
+      # Legado (opcional): sobrescreve FRONTEND_URL nas URLs internas do Action Mailer.
+      MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-}
+      MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-}
+      MAILER_DEFAULT_URL_PROTOCOL: ${MAILER_DEFAULT_URL_PROTOCOL:-}
       # Repasse explícito: variáveis do --env-file .env.docker não entram no container se não aparecerem aqui.
       SMTP_ADDRESS: ${SMTP_ADDRESS:-}
       SMTP_PORT: ${SMTP_PORT:-587}

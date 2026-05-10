@@ -35,16 +35,8 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Links nos e-mails: variáveis de ambiente (ver .env.example); fallback localhost.
-  config.action_mailer.default_url_options = if ENV["MAILER_DEFAULT_URL_HOST"].present?
-    {
-      host: ENV.fetch("MAILER_DEFAULT_URL_HOST"),
-      protocol: ENV.fetch("MAILER_DEFAULT_URL_PROTOCOL", "http"),
-      port: ENV["MAILER_DEFAULT_URL_PORT"].presence&.to_i
-    }.compact
-  else
-    { host: "localhost", port: 3000 }
-  end
+  # Links nos e-mails: +FRONTEND_URL+, MAILER_* legado ou localhost.
+  config.action_mailer.default_url_options = MailerEnv.action_mailer_default_url_options
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

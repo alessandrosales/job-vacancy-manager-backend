@@ -58,13 +58,13 @@ env:
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
 
-    # Action Mailer / SMTP: variáveis de ambiente (ver .env.example na raiz do app).
-    # MAILER_DEFAULT_URL_HOST: api.seudominio.com
-    # MAILER_DEFAULT_URL_PROTOCOL: https
-    # SMTP_ADDRESS: smtp.sendgrid.net
+    # E-mail: FRONTEND_URL (links + default_url_options) + SMTP_* (ver .env.example).
+    # SMTP_DEFAULT_FROM: "App <no-reply@seudominio.com>"
+    # SMTP_ADDRESS: smtp.resend.com
     # SMTP_PORT: "587"
-    # SMTP_USER_NAME: apikey
-    # SMTP_PASSWORD: ...
+    # SMTP_USER_NAME: resend
+    # SMTP_PASSWORD: re_...
+    # Opcional legado: MAILER_DEFAULT_URL_HOST / _PROTOCOL / _PORT
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal logs -r job" will tail logs from the first server in the job section.

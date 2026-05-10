@@ -57,12 +57,8 @@ Rails.application.configure do
   smtp_configured = ENV["SMTP_ADDRESS"].present?
   config.action_mailer.perform_deliveries = smtp_configured
 
-  # Links em e-mails (variáveis de ambiente; ver .env.example / plataforma de deploy).
-  config.action_mailer.default_url_options = {
-    host: ENV.fetch("MAILER_DEFAULT_URL_HOST", "example.com"),
-    protocol: ENV.fetch("MAILER_DEFAULT_URL_PROTOCOL", "https"),
-    port: ENV["MAILER_DEFAULT_URL_PORT"].presence&.to_i
-  }.compact
+  # Links em e-mails: +FRONTEND_URL+ (MailerEnv) ou variáveis legadas MAILER_DEFAULT_URL_*.
+  config.action_mailer.default_url_options = MailerEnv.action_mailer_default_url_options
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
