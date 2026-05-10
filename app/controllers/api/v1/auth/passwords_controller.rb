@@ -8,6 +8,12 @@ module Api
           email = recover_params[:email].to_s.strip.downcase
           user = User.find_by(email: email) if email.present?
           if user
+            unless ActionMailer::Base.perform_deliveries
+              Rails.logger.warn(
+                "[PasswordsController#recover] user matched but ActionMailer.perform_deliveries is false — " \
+                "no e-mail sent (set SMTP_ADDRESS in the Rails process env; see config/environments/production.rb)."
+              )
+            end
             token = user.generate_token_for(:password_reset)
             PasswordMailer.with(user: user, token: token).reset_instructions.deliver_now
           end
