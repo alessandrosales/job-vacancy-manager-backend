@@ -5,10 +5,9 @@
 
 name: CI
 
+# Apenas push em main/master (merge na branch integra código e dispara uma execução; sem pull_request evita CI duplicado no PR + no merge).
 on:
   push:
-    branches: [main, master]
-  pull_request:
     branches: [main, master]
 
 permissions:
