@@ -2,6 +2,7 @@
 
 # Base URL of the SPA used in transactional e-mails (password reset links, etc.).
 # Set +ENV["FRONTEND_URL"]+ (string, no trailing slash); see +.env.example+.
+# Action Mailer +default_url_options+ also align with +FRONTEND_URL+ when legacy MAILER_* envs are unset (see +config/mailer_env.rb+).
 # In non-production, falls back to +http://localhost:5173+ when unset so local mail previews work.
 module FrontendUrl
   class MissingFrontendUrlError < StandardError; end

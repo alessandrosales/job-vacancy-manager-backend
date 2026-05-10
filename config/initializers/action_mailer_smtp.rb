@@ -8,20 +8,26 @@ return if Rails.env.test?
 smtp_address = ENV["SMTP_ADDRESS"].presence
 return if smtp_address.blank?
 
+if Rails.env.production? && MailerEnv.transactional_from.to_s.strip.blank?
+  raise(
+    "SMTP_DEFAULT_FROM or MAILER_DEFAULT_FROM must be set when SMTP_ADDRESS is configured in production. " \
+    "The application would fall back to noreply@example.com, which providers like Resend reject (550 example.com not verified). " \
+    "Use a sender on a verified domain (e.g. \"Hireest <no-reply@hireest.com>\") — https://resend.com/domains"
+  )
+end
+
 Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
 
-  from = ENV["MAILER_DEFAULT_FROM"].presence
+  from = MailerEnv.transactional_from
   config.action_mailer.default_options = { from: from } if from.present?
 
   auth_mode = (ENV["SMTP_AUTHENTICATION"].presence || "plain").to_s.downcase.strip
 
   port = ENV["SMTP_PORT"].present? ? ENV["SMTP_PORT"].to_i : 587
 
-  domain = ENV["SMTP_DOMAIN"].presence ||
-    ENV["MAILER_DEFAULT_URL_HOST"].presence ||
-    "localhost"
+  domain = MailerEnv.smtp_helo_domain
 
   enable_starttls = ActiveModel::Type::Boolean.new.cast(
     ENV.fetch("SMTP_ENABLE_STARTTLS_AUTO", "true")
