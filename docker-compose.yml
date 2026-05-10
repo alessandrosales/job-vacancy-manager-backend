@@ -31,9 +31,19 @@ services:
       PORT: "3000"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      MAILER_DEFAULT_FROM: ${MAILER_DEFAULT_FROM:-}
       MAILER_DEFAULT_URL_HOST: ${MAILER_DEFAULT_URL_HOST:-localhost}
       MAILER_DEFAULT_URL_PORT: ${MAILER_DEFAULT_URL_PORT:-3000}
       MAILER_DEFAULT_URL_PROTOCOL: ${MAILER_DEFAULT_URL_PROTOCOL:-http}
+      # Repasse explícito: variáveis do --env-file .env.docker não entram no container se não aparecerem aqui.
+      SMTP_ADDRESS: ${SMTP_ADDRESS:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_DOMAIN: ${SMTP_DOMAIN:-}
+      SMTP_USER_NAME: ${SMTP_USER_NAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
+      SMTP_ENABLE_STARTTLS_AUTO: ${SMTP_ENABLE_STARTTLS_AUTO:-true}
+      SMTP_SSL: ${SMTP_SSL:-false}
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SKIP_DB_PREPARE: ${SKIP_DB_PREPARE:-false}
