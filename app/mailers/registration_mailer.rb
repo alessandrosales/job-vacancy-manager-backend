@@ -5,6 +5,6 @@ class RegistrationMailer < ApplicationMailer
 
   def welcome
     @user = params[:user]
-    mail(to: @user.email, subject: "Welcome to Hireest")
+    mail(to: @user.email, subject: t(".subject"))
   end
 end

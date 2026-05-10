@@ -1,0 +1,25 @@
+---
+es:
+  mailer:
+    signature: |-
+      Saludos,
+      Hireest
+  password_mailer:
+    reset_instructions:
+      subject: "Restablece tu contraseña — Hireest"
+      greeting: "Hola, %{name},"
+      intro: "Recibimos una solicitud para restablecer tu contraseña. Abre el siguiente enlace para elegir una nueva contraseña:"
+      expiry: "Este enlace caduca en poco tiempo. Si no solicitaste restablecer la contraseña, puedes ignorar este correo."
+    password_changed:
+      subject: "Tu contraseña se ha cambiado — Hireest"
+      greeting: "Hola, %{name},"
+      intro: "Te confirmamos que la contraseña de tu cuenta de Hireest (%{email}) se acaba de cambiar."
+      if_you: "Si realizaste este cambio, puedes ignorar este mensaje."
+      if_not: "Si no fuiste tú, protege tu cuenta de inmediato: usa \"Olvidé mi contraseña\" en el inicio de sesión o contacta con soporte."
+  registration_mailer:
+    welcome:
+      subject: "Te damos la bienvenida a Hireest"
+      greeting: "Hola, %{name},"
+      intro: "Gracias por registrarte en Hireest. Tu cuenta ya está lista."
+      signin: "Puedes iniciar sesión en cualquier momento con tu correo y la contraseña que elegiste."
+      if_not: "Si no creaste esta cuenta, ignora este mensaje."
