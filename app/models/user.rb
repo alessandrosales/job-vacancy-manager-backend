@@ -61,6 +61,15 @@ class User < ApplicationRecord
     end
   end
 
+  # Preferência da interface / e-mails transacionais → símbolo I18n (config/application.rb + config/locales/mailer.*.yml).
+  def locale_for_mailer
+    case preferred_language.to_s
+    when "pt_br" then :"pt-BR"
+    when "es" then :es
+    else :en
+    end
+  end
+
   def as_api_json
     as_json(
       only: %i[

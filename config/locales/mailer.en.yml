@@ -1,0 +1,25 @@
+---
+en:
+  mailer:
+    signature: |-
+      Best regards,
+      Hireest
+  password_mailer:
+    reset_instructions:
+      subject: "Reset your password — Hireest"
+      greeting: "Hi %{name},"
+      intro: "We received a request to reset your password. Open the link below to choose a new password:"
+      expiry: "This link expires after a short time. If you did not request a password reset, you can safely ignore this email."
+    password_changed:
+      subject: "Your password was changed — Hireest"
+      greeting: "Hi %{name},"
+      intro: "This is a confirmation that the password for your Hireest account (%{email}) was just changed."
+      if_you: "If you made this change, you can ignore this message."
+      if_not: "If you did not change your password, secure your account right away: use \"Forgot password\" on the sign-in page or contact support."
+  registration_mailer:
+    welcome:
+      subject: "Welcome to Hireest"
+      greeting: "Hi %{name},"
+      intro: "Thanks for signing up for Hireest. Your account is ready."
+      signin: "You can sign in anytime using your email address and the password you chose."
+      if_not: "If you did not create this account, please ignore this message."

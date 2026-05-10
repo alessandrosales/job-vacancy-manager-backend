@@ -33,7 +33,7 @@ RSpec.describe "API V1 — Auth / register", openapi_spec: "v1/swagger.yaml" do
           expect(ActionMailer::Base.deliveries.size).to eq(1)
           mail = ActionMailer::Base.deliveries.last
           expect(mail.to).to eq([ "register-auth@example.com" ])
-          expect(mail.subject).to eq("Welcome to Hireest")
+          expect(mail.subject).to eq(I18n.t("registration_mailer.welcome.subject", locale: :en))
           expect(mail.body.raw_source).to include("Thanks for signing up")
         end
       end

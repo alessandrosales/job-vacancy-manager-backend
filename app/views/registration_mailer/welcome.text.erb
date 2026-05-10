@@ -1,10 +1,9 @@
-Hi <%= @user.name %>,
+<%= t(".greeting", name: @user.name) %>
 
-Thanks for signing up for Hireest. Your account is ready.
+<%= t(".intro") %>
 
-You can sign in anytime using your email address and the password you chose.
+<%= t(".signin") %>
 
-If you did not create this account, please ignore this message.
+<%= t(".if_not") %>
 
-Best regards,
-Hireest
+<%= t("mailer.signature") %>
