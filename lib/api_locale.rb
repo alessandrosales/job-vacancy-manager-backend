@@ -5,7 +5,7 @@ class ApiLocale
   STORAGE_TO_I18N = {
     "en" => :en,
     "pt_br" => :"pt-BR",
-    "es" => :es,
+    "es" => :es
   }.freeze
 
   I18N_TO_STORAGE = STORAGE_TO_I18N.invert.freeze

@@ -7,7 +7,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
     get "Lists the current user (paginated by default)" do
       tags "Users"
       produces "application/json"
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
       parameter name: :page, in: :query, required: false, schema: { type: :integer, minimum: 1 },
         description: "Page number (default 1)."
       parameter name: :per_page, in: :query, required: false, schema: { type: :integer, minimum: 1, maximum: 100 },
@@ -109,7 +109,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
     get "Fetches user by id" do
       tags "Users"
       produces "application/json"
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
 
       response 200, "found" do
         schema "$ref" => "#/components/schemas/user"
@@ -151,7 +151,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
       tags "Users"
       consumes "application/json"
       produces "application/json"
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
       parameter name: :body, in: :body, schema: { "$ref" => "#/components/schemas/user_update_request" }
 
       response 200, "updated" do
@@ -215,7 +215,7 @@ RSpec.describe "API V1 — Users", openapi_spec: "v1/swagger.yaml" do
 
     delete "Deletes user" do
       tags "Users"
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
 
       response 204, "no content" do
         let!(:existing) do

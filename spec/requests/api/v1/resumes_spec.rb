@@ -165,8 +165,8 @@ RSpec.describe "API V1 — Resumes", openapi_spec: "v1/swagger.yaml" do
           { resume: {
             title: "New title",
             description: "Updated body",
-            preferred_language: "pt_br",
-          }, }
+            preferred_language: "pt_br"
+          } }
         end
 
         run_test! do |response|

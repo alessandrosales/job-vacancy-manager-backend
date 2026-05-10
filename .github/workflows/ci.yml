@@ -1,36 +1,56 @@
+# Continuous integration: lint, security scans, autoload check, and RSpec.
+# CI overview: https://docs.github.com/en/actions/get-started/continuous-integration
+# Workflow syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+# PostgreSQL service: https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  scan_ruby:
+  quality:
+    name: Code quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+    services:
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
-      
-      - name: Scan for known security vulnerabilities in gems used
-        run: bin/bundler-audit
-      
-  lint:
-    runs-on: ubuntu-latest
     env:
-      RUBOCOP_CACHE_ROOT: tmp/rubocop
+      RAILS_ENV: test
+      DATABASE_HOST: localhost
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Install packages (libvips)
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -42,38 +62,27 @@ jobs:
         env:
           DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
         with:
-          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          path: tmp/rubocop
           key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
           restore-keys: |
             rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
 
-      - name: Lint code for consistent style
+      - name: Zeitwerk autoloading check
+        run: bin/rails zeitwerk:check
+
+      - name: Lint (RuboCop)
+        env:
+          RUBOCOP_CACHE_ROOT: tmp/rubocop
         run: bin/rubocop -f github
 
-  test:
-    runs-on: ubuntu-latest
+      - name: Security — gem audit (bundler-audit)
+        run: bin/bundler-audit
 
-    # services:
-    #  redis:
-    #    image: valkey/valkey:8
-    #    ports:
-    #      - 6379:6379
-    #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-      - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+      - name: Security — Brakeman
+        run: bin/brakeman --no-pager
 
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Prepare test database
+        run: bin/rails db:test:prepare
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - name: Run tests
-        env:
-          RAILS_ENV: test
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+      - name: Run RSpec
+        run: bundle exec rspec

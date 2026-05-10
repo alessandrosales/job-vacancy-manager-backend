@@ -7,7 +7,7 @@ RSpec.describe "API V1 — Auth / me", openapi_spec: "v1/swagger.yaml" do
     get "Returns the authenticated user" do
       tags "Auth"
       produces "application/json"
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
 
       response 200, "OK" do
         schema "$ref" => "#/components/schemas/user"

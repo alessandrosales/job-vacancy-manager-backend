@@ -360,7 +360,7 @@ class Resume::PdfImporter
       [
         normalize_fuzzy_text(row["name"]),
         date_key_for_dedupe(parse_date(row["date_from"])),
-        date_key_for_dedupe(parse_date(row["date_to"])),
+        date_key_for_dedupe(parse_date(row["date_to"]))
       ]
     end
 
@@ -371,7 +371,7 @@ class Resume::PdfImporter
         normalize_fuzzy_text(row["degree"].presence || ""),
         normalize_fuzzy_text(row["field_of_study"].presence || ""),
         date_key_for_dedupe(parse_date(row["date_from"])),
-        date_key_for_dedupe(parse_date(row["date_to"])),
+        date_key_for_dedupe(parse_date(row["date_to"]))
       ]
     end
 
