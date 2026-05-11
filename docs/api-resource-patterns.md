@@ -65,9 +65,9 @@ Then `show` / `update` / `destroy` do not repeat `rescue` in every resource.
 ### 3.5 Authentication and authorization (implemented for `users`)
 
 - **Login:** `POST /api/v1/auth/login` with `{ "auth": { "email", "password" } }` returns `{ "token", "user" }` or `401` with an empty body on failure.
-- **JWT:** HS256 payload `{ "sub" => user.id, "exp" => … }` via `User::JwtIssuer`; secret resolution: `credentials.dig(:jwt, :secret)` → `ENV["JWT_SECRET"]` → `Rails.application.secret_key_base` (set a dedicated secret in production).
+- **JWT:** HS256 payload `{ "sub" => user.id, "exp" => …, "jv" => users.jwt_version }` via `User::JwtIssuer`. Ausência de `jv` equivale a versão `0` (legado); `jv` deve igualar `users.jwt_version` ou resposta `401`. Segredo: `credentials.dig(:jwt, :secret)` → `ENV["JWT_SECRET"]` → `Rails.application.secret_key_base`.
 - **`Current.user`:** set in `Api::V1::Authenticatable` after a valid Bearer token; cleared with `Current.reset` after each request.
-- **`users#index`:** returns only the authenticated user (`[current_user.as_api_json]`); `show` / `update` / `destroy` require `id` to match `current_user.id` (`403` if another user’s id is known).
+- **`users#index`:** returns only the authenticated user (`[current_user.as_api_json]`); `show` / `update` / `destroy` respond `404` unless `id` is the authenticated user’s id (evita enumeração de contas).
 
 ### 3.6 Pagination on `index` (default behavior)
 

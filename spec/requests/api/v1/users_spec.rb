@@ -273,7 +273,7 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
     expect(response).to have_http_status(:unauthorized)
   end
 
-  it "returns 403 when fetching another user's record" do
+  it "returns 404 when fetching another user's record (same response as unknown id)" do
     alice = User.create!(
       name: "Alice",
       email: "alice@example.com",
@@ -287,7 +287,7 @@ RSpec.describe "API V1 — Users authorization (request)", type: :request do
       password_confirmation: "password12"
     )
     get api_v1_user_path(bob), headers: { "Authorization" => "Bearer #{User::JwtIssuer.encode(alice)}" }
-    expect(response).to have_http_status(:forbidden)
+    expect(response).to have_http_status(:not_found)
   end
 
   it "does not send password-changed e-mail when patch omits password" do

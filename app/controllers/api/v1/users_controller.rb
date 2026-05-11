@@ -41,9 +41,8 @@ module Api
       private
 
       def set_user
-        @user = User.find_by(id: params[:id])
+        @user = current_user if params[:id].to_s == current_user.id.to_s
         head(:not_found) && return if @user.blank?
-        head(:forbidden) && return unless @user.id == current_user.id
       end
 
       def user_params

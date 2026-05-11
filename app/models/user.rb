@@ -24,6 +24,7 @@ class User < ApplicationRecord
   before_validation :normalize_email
   before_validation :normalize_optional_profile_fields
   before_validation :normalize_preferred_language
+  before_save :bump_jwt_version_when_password_rotates
 
   validates :name, presence: true
   validates :email, presence: true,
@@ -80,7 +81,19 @@ class User < ApplicationRecord
     ).merge("ai_token_configured" => ai_token.present?)
   end
 
+  # Incrementa +jwt_version+ para invalidar todos os JWTs emitidos antes (logout global).
+  def invalidate_jwt_sessions!
+    increment!(:jwt_version)
+  end
+
   private
+
+  def bump_jwt_version_when_password_rotates
+    return unless password_digest_changed?
+    return if new_record?
+
+    self.jwt_version = jwt_version.to_i + 1
+  end
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
