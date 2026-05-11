@@ -37,7 +37,7 @@ class User < ApplicationRecord
   validates :preferred_language, inclusion: { in: PREFERRED_UI_LANGUAGES }
 
   class << self
-    def find_or_create_from_firebase!(claims)
+    def find_or_create_from_firebase!(claims, preferred_language: nil)
       firebase_uid = claims.fetch("sub").to_s
       email = claims.fetch("email").to_s.strip.downcase
       name = claims["name"].presence || email.split("@").first
@@ -50,6 +50,12 @@ class User < ApplicationRecord
         email: email,
         name: name
       )
+
+      # Idioma escolhido na landing/login só vale na primeira persistência — evita sobrescrever
+      # uma preferência já salva quando o usuário acessa de outra máquina/idioma.
+      if user.new_record? && PREFERRED_UI_LANGUAGES.include?(preferred_language.to_s)
+        user.preferred_language = preferred_language
+      end
 
       if user.password_digest.blank?
         temporary_password = SecureRandom.hex(24)

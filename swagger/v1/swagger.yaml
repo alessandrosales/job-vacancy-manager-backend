@@ -1728,6 +1728,13 @@ components:
               type: string
               minLength: 8
               writeOnly: true
+            preferred_language:
+              type: string
+              enum:
+              - en
+              - pt_br
+              - es
+              description: Idioma da UI escolhido na landing/login; vira o `preferred_language` inicial do usuário.
           required:
           - name
           - email

@@ -66,4 +66,40 @@ RSpec.describe "API V1 — Auth / firebase", openapi_spec: "v1/swagger.yaml" do
       end
     end
   end
+
+  describe "preferred_language vindo da landing/login (POST /api/v1/auth/firebase)" do
+    let(:claims) do
+      {
+        "sub" => "firebase-uid-lang",
+        "email" => "firebase-lang@example.com",
+        "email_verified" => true,
+        "name" => "Firebase Lang"
+      }
+    end
+
+    before do
+      allow(User::FirebaseTokenVerifier)
+        .to receive(:verify_id_token)
+        .with("firebase.token.lang")
+        .and_return(claims)
+    end
+
+    it "persiste o idioma escolhido ao criar a conta" do
+      post "/api/v1/auth/firebase", params: {
+        auth: { id_token: "firebase.token.lang", preferred_language: "pt_br" }
+      }, as: :json
+      expect(response).to have_http_status(:ok)
+      user = User.find_by!(email: "firebase-lang@example.com")
+      expect(user.preferred_language).to eq("pt_br")
+    end
+
+    it "ignora preferred_language em logins subsequentes" do
+      User.find_or_create_from_firebase!(claims, preferred_language: "pt_br")
+      post "/api/v1/auth/firebase", params: {
+        auth: { id_token: "firebase.token.lang", preferred_language: "es" }
+      }, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(User.find_by!(email: "firebase-lang@example.com").preferred_language).to eq("pt_br")
+    end
+  end
 end
