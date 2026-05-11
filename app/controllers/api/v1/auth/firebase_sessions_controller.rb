@@ -5,9 +5,13 @@ module Api
     module Auth
       class FirebaseSessionsController < BaseController
         def create
-          id_token = params.require(:auth).permit(:id_token).fetch(:id_token).to_s.strip
+          auth_params = params.require(:auth).permit(:id_token, :preferred_language)
+          id_token = auth_params.fetch(:id_token).to_s.strip
           claims = User::FirebaseTokenVerifier.verify_id_token(id_token)
-          user = User.find_or_create_from_firebase!(claims)
+          user = User.find_or_create_from_firebase!(
+            claims,
+            preferred_language: auth_params[:preferred_language]
+          )
 
           render json: {
             token: User::JwtIssuer.encode(user),

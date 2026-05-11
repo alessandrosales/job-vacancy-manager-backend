@@ -64,5 +64,38 @@ RSpec.describe "API V1 — Auth / register", openapi_spec: "v1/swagger.yaml" do
         run_test!
       end
     end
+
+    # Sem swagger spec: o cenário do `preferred_language` foi documentado em `auth_register_request`.
+    describe "preferred_language vindo da landing/login" do
+      it "persiste o idioma escolhido na criação" do
+        post "/api/v1/auth/register", params: {
+          auth: {
+            name: "Conta PT",
+            email: "register-pt@example.com",
+            password: "password12",
+            password_confirmation: "password12",
+            preferred_language: "pt_br"
+          }
+        }, as: :json
+        expect(response).to have_http_status(:created)
+        user = User.find_by!(email: "register-pt@example.com")
+        expect(user.preferred_language).to eq("pt_br")
+      end
+
+      it "cai no default 'en' quando o idioma é inválido" do
+        post "/api/v1/auth/register", params: {
+          auth: {
+            name: "Conta default",
+            email: "register-default@example.com",
+            password: "password12",
+            password_confirmation: "password12",
+            preferred_language: "fr"
+          }
+        }, as: :json
+        expect(response).to have_http_status(:created)
+        user = User.find_by!(email: "register-default@example.com")
+        expect(user.preferred_language).to eq("en")
+      end
+    end
   end
 end

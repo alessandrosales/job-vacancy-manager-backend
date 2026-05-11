@@ -89,5 +89,40 @@ RSpec.describe User, type: :model do
       expect(ActionMailer::Base.deliveries).to be_empty
       expect(User.find_by!(email: "firebase-link@example.com").firebase_uid).to eq("novo-firebase-uid")
     end
+
+    it "persiste o preferred_language recebido em novas contas" do
+      user = described_class.find_or_create_from_firebase!(claims, preferred_language: "pt_br")
+      expect(user.preferred_language).to eq("pt_br")
+    end
+
+    it "ignora preferred_language inválido em novas contas e mantém o default 'en'" do
+      user = described_class.find_or_create_from_firebase!(claims, preferred_language: "fr")
+      expect(user.preferred_language).to eq("en")
+    end
+
+    it "não sobrescreve preferred_language existente em logins subsequentes" do
+      existing = described_class.find_or_create_from_firebase!(claims, preferred_language: "pt_br")
+      described_class.find_or_create_from_firebase!(claims, preferred_language: "es")
+      expect(existing.reload.preferred_language).to eq("pt_br")
+    end
+
+    it "não sobrescreve preferred_language ao vincular Firebase a conta já existente por e-mail" do
+      User.create!(
+        name: "Existente PT",
+        email: "firebase-pref-link@example.com",
+        password: "password12",
+        password_confirmation: "password12",
+        preferred_language: "pt_br"
+      )
+      described_class.find_or_create_from_firebase!(
+        {
+          "sub" => "firebase-pref-uid",
+          "email" => "firebase-pref-link@example.com",
+          "name" => "Existente PT"
+        },
+        preferred_language: "es"
+      )
+      expect(User.find_by!(email: "firebase-pref-link@example.com").preferred_language).to eq("pt_br")
+    end
   end
 end
