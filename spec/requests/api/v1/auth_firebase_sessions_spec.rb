@@ -18,6 +18,7 @@ RSpec.describe "API V1 — Auth / firebase", openapi_spec: "v1/swagger.yaml" do
         end
 
         before do
+          ActionMailer::Base.deliveries.clear
           allow(User::FirebaseTokenVerifier)
             .to receive(:verify_id_token)
             .with("firebase.token.value")
@@ -41,6 +42,11 @@ RSpec.describe "API V1 — Auth / firebase", openapi_spec: "v1/swagger.yaml" do
           expect(user).to be_present
           expect(user.firebase_uid).to eq("firebase-uid-123")
           expect(user.avatar_url).to be_nil
+
+          expect(ActionMailer::Base.deliveries.size).to eq(1)
+          mail = ActionMailer::Base.deliveries.last
+          expect(mail.to).to eq([ "firebase-user@example.com" ])
+          expect(mail.subject).to eq(I18n.t("registration_mailer.welcome.subject", locale: :en))
         end
       end
 

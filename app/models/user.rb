@@ -57,7 +57,11 @@ class User < ApplicationRecord
         user.password_confirmation = temporary_password
       end
 
+      first_time_persist = user.new_record?
       user.save!
+      if first_time_persist
+        RegistrationMailer.with(user: user).welcome.deliver_now
+      end
       user
     end
   end
