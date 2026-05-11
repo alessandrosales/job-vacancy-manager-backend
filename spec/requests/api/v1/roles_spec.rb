@@ -90,6 +90,32 @@ RSpec.describe "API V1 — Roles", openapi_spec: "v1/swagger.yaml" do
 
         run_test!
       end
+
+      response 422, "duplicate name for user" do
+        schema "$ref" => "#/components/schemas/validation_errors"
+
+        let!(:owner) do
+          User.create!(
+            name: "OwnerDup",
+            email: "roles-dup@example.com",
+            password: "password12",
+            password_confirmation: "password12"
+          )
+        end
+        let(:Authorization) { "Bearer #{User::JwtIssuer.encode(owner)}" }
+
+        before do
+          owner.roles.create!(name: "Designer", interest_level: 2)
+        end
+
+        let(:body) { { role: { name: "designer", interest_level: 4 } } }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to be_a(Hash)
+          expect(json["errors"]["name"]).to be_present
+        end
+      end
     end
   end
 
