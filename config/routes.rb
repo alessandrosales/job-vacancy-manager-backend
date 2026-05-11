@@ -39,6 +39,13 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  mount Rswag::Ui::Engine => "/api-docs"
-  mount Rswag::Api::Engine => "/api-docs"
+  api_docs_enabled =
+    Rails.env.development? ||
+    Rails.env.test? ||
+    ActiveModel::Type::Boolean.new.cast(ENV.fetch("ENABLE_API_DOCS", "false"))
+
+  if api_docs_enabled
+    mount Rswag::Ui::Engine => "/api-docs"
+    mount Rswag::Api::Engine => "/api-docs"
+  end
 end

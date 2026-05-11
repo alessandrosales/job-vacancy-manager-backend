@@ -3,7 +3,9 @@
 module Api
   module V1
     class OpportunitiesController < AuthenticatedController
-      before_action :set_opportunity, only: %i[show update destroy]
+      include TenantScopedRecord
+
+      tenant_scoped_record :opportunity, :opportunities, only: %i[show update destroy]
 
       def index
         render_paginated(current_user.opportunities.order(updated_at: :desc))
@@ -36,11 +38,6 @@ module Api
       end
 
       private
-
-      def set_opportunity
-        @opportunity = current_user.opportunities.find_by(id: params[:id])
-        head(:not_found) && return if @opportunity.blank?
-      end
 
       def opportunity_params
         params.require(:opportunity).permit(
